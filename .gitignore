@@ -11,6 +11,8 @@
 /docker/webapp/*.jar
 rebel-remote.xml
 
+dist_electron/
+
 ######################
 # Node
 ######################
