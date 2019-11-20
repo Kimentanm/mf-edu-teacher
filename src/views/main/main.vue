@@ -25,7 +25,8 @@
     import routers from '@/router/routers'
     import {mapMutations} from 'vuex'
     import HeaderBar from './components/header-bar'
-    import SideMenu from './components/side-menu'
+    import SideMenu from './components/side-menu';
+    import env from '../../config/env';
 
     export default {
         name: "main",
@@ -33,17 +34,23 @@
         data() {
             return {
                 isCollapsed: false,
-                routeName: ''
+                routeName: '',
+                // 如果不需要websocket支持，请关闭此选项
+                enableStomp: true,
+                // 禁用默认的自动连接，使用onConnectionInactive代替
+                stompReconnect: false
             }
         },
         props: {},
         watch: {
             '$route'(val) {
                 this.routeName = val.name;
-                console.log(this.routeName);
             },
         },
         computed: {
+            userId () {
+                return this.$store.state.user.userIdentity.id;
+            },
             sidebarHide() {
                 return this.routeName !== 'class-index'
             },
@@ -59,12 +66,48 @@
                 let copy = cloneObj(routers);
                 let menuList = getMenuByRouter(copy);
                 this.setMenuList(menuList);
+            },
+            onConnected (frame) {
+                console.log('Connected: ' + frame);
+                this.$stompClient.subscribe('/topic/' + this.userId, this.onMessage, this.onFailed);
+            },
+            onMessage (data) {
+                let body = JSON.parse(data.body);
+                switch (body.flag) {
+                    default:break;
+                }
+            },
+            onFailed (frame) {
+                console.log('连接失败：' + frame);
+            },
+            connectSrv () {
+                let url;
+                if (env === 'development') {
+                    url = 'http://localhost:8081/mf-edu/endpointChat';
+                } else {
+                    url = 'http://111.231.135.83/hsd-server/endpointChat';
+                }
+                this.connetWM(url, {}, this.onConnected, this.onConnectionInactive);
+            },
+            onConnectionInactive (errorEvent) {
+                if (errorEvent.type === 'close') {
+                    if (this.userId) {
+                        setTimeout(this.connectSrv, 5000);
+                    }
+                }
+            },
+            disconnect () {
+                this.disconnetWM();
             }
         },
         mounted() {
-            this.processMenuList()
+            this.routeName = this.$route.name;
+            this.processMenuList();
         },
         created() {
+            if (this.enableStomp) {
+                this.connectSrv();
+            }
         }
     }
 </script>

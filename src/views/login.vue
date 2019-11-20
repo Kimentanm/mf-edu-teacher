@@ -61,7 +61,6 @@
                 'getUserInfo'
             ]),
             handleSubmit() {
-                this.$socket.emit('msginfo', '123');
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
                         this.loginModal = true;
