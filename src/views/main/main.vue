@@ -68,14 +68,18 @@
                 this.setMenuList(menuList);
             },
             onConnected (frame) {
-                console.log('Connected: ' + frame);
-                this.$stompClient.subscribe('/topic/' + this.userId, this.onMessage, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendOffer/' + this.userId, this.onMessage, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendAnswer/' + this.userId, this.onGetAnswer, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendICE/' + this.userId, this.onGetICE, this.onFailed);
             },
             onMessage (data) {
-                let body = JSON.parse(data.body);
-                switch (body.flag) {
-                    default:break;
-                }
+                this.$bus.emit('on-getOffer', data.body)
+            },
+            onGetAnswer (data) {
+                this.$bus.emit('on-getAnswer', data.body)
+            },
+            onGetICE() {
+                this.$bus.emit('on-getICE', data.body)
             },
             onFailed (frame) {
                 console.log('连接失败：' + frame);
@@ -83,9 +87,9 @@
             connectSrv () {
                 let url;
                 if (env === 'development') {
-                    url = 'http://localhost:8081/mf-edu/endpointChat';
+                    url = 'http://localhost:8081/mf-edu/endpointVideo';
                 } else {
-                    url = 'http://111.231.135.83/hsd-server/endpointChat';
+                    url = 'http://111.231.135.83/hsd-server/endpointVideo';
                 }
                 this.connetWM(url, {}, this.onConnected, this.onConnectionInactive);
             },

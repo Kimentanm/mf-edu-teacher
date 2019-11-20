@@ -35,7 +35,7 @@ function createWindow() {
     // titleBarStyle: 'hidden' // 无边框窗口时，mac任然显示关闭缩小全屏按钮
   });
   win.maximize();
-  win.setResizable(false);
+  win.setResizable(true);
   win.show();
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {

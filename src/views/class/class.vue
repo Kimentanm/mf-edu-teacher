@@ -55,8 +55,8 @@
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
                     if (event.candidate) {
-                        this.onIce({account: data.self, self: this.account, sdp: event.candidate});
-                        // socket.emit('1v1ICE', {account: data.self, self: this.account, sdp: event.candidate});
+                        let message = {sender: this.userId, receiver: 276, sdp: event.candidate};
+                        this.$stompClient.send('/sendICE', JSON.stringify(message), {});
                     }
                 };
                 this.peer.onaddstream = (event) => { // 监听是否有媒体流接入，如果有就赋值给 rtcB 的 src
@@ -65,16 +65,6 @@
                     let video = document.querySelector('#rtcB');
                     video.srcObject = event.stream;
                 };
-                this.createOffer({account: '456', self: this.account});
-            },
-            async onIce(data) { // 接收 ICE 候选
-                try {
-                    console.log(11);
-                    console.log(data.sdp);
-                    await this.peer.addIceCandidate(data.sdp); // 设置远程 ICE
-                } catch (e) {
-                    console.log('onAnswer: ', e);
-                }
             },
             async createOffer(data) { // 创建并发送 offer
                 try {
@@ -83,14 +73,18 @@
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
                     // 给对方发送 offer
-                    let message = {sender: this.userId, receiver: 2, sdp: offer};
+                    let message = {sender: this.userId, receiver: 276, sdp: offer};
                     this.$stompClient.send('/sendOffer', JSON.stringify(message), {});
                     // socket.emit('1v1offer', {account: data.self, self: this.account, sdp: offer});
                 } catch (e) {
                     console.log('createOffer: ', e);
                 }
             },
-            async onOffer(data) { // 接收offer并发送 answer
+            /**
+             * 接收offer并发送 answer
+             * @returns {Promise<void>}
+             */
+            async onGetOffer(data) {
                 try {
                     // 接收端设置远程 offer 描述
                     await this.peer.setRemoteDescription(data.sdp);
@@ -99,22 +93,36 @@
                     // 接收端设置本地 answer 描述
                     await this.peer.setLocalDescription(answer);
                     // 给对方发送 answer
-                    this.onAnswer({account: data.self, self: this.account, sdp: answer});
-                    // socket.emit('1v1answer', {account: data.self, self: this.account, sdp: answer});
+                    let message = {
+                        sender: this.userId,
+                        receiver: 276,
+                        sdp: answer
+                    };
+                    this.$stompClient.send('/sendAnswer', JSON.stringify(message), {});
                 } catch (e) {
                     console.log('onOffer: ', e);
                 }
             },
-            async onAnswer(data) { // 接收answer
+            async onGetAnswer(data) {
                 try {
                     await this.peer.setRemoteDescription(data.sdp); // 呼叫端设置远程 answer 描述
                 } catch (e) {
                     console.log('onAnswer: ', e);
                 }
             },
+            async onGetICE(data) {
+                try {
+                    await this.peer.addIceCandidate(data.sdp); // 设置远程 ICE
+                } catch (e) {
+                    console.log('onAnswer: ', e);
+                }
+            },
         },
         mounted() {
-            this.createMedia({account: '456', self: this.account});
+            this.$bus.on('on-getOffer', this.onGetOffer);
+            this.$bus.on('on-getAnswer', this.onGetAnswer);
+            this.$bus.on('on-getICE', this.onGetICE);
+            this.createMedia();
         },
         created() {
 

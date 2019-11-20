@@ -82,9 +82,6 @@
             }
         },
         created() {
-            this.sockets.subscribe('msginfo', (data) => {
-                console.log(data);
-            });
         }
     }
 </script>
