@@ -28,7 +28,15 @@
                 offerOption: {
                     offerToReceiveAudio: 1,
                     offerToReceiveVideo: 1
-                }
+                },
+                iceServers: [
+                    { url: "stun:stun.l.google.com:19302"}, // 谷歌的公共服务
+                    {
+                        url: 'turn:192.158.29.39:3478?transport=udp',
+                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                        username: '28224511:1379330808'
+                    }
+                ]
             }
         },
         props: {},
@@ -56,7 +64,7 @@
             initPeer(data) {
                 // 创建输出端 PeerConnection
                 let PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-                this.peer = new PeerConnection();
+                this.peer = new PeerConnection(this.iceServers);
                 this.peer.addStream(this.localstream); // 添加本地流
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
