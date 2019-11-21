@@ -73,13 +73,19 @@
                 this.$stompClient.subscribe('/topic/sendICE/' + this.userId, this.onGetICE, this.onFailed);
             },
             onMessage (data) {
-                this.$bus.emit('on-getOffer', data.body)
+                if (data.body) {
+                    this.$bus.emit('on-getOffer', JSON.parse(data.body))
+                }
             },
             onGetAnswer (data) {
-                this.$bus.emit('on-getAnswer', data.body)
+                if (data.body) {
+                    this.$bus.emit('on-getAnswer', JSON.parse(data.body))
+                }
             },
             onGetICE(data) {
-                this.$bus.emit('on-getICE', data.body)
+                if (data.body) {
+                    this.$bus.emit('on-getICE', JSON.parse(data.body))
+                }
             },
             onFailed (frame) {
                 console.log('连接失败：' + frame);

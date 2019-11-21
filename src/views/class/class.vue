@@ -94,7 +94,7 @@
             async onGetOffer(data) {
                 try {
                     // 接收端设置远程 offer 描述
-                    await this.peer.setRemoteDescription(JSON.parse(data.sdp));
+                    await this.peer.setRemoteDescription(data.sdp);
                     // 接收端创建 answer
                     let answer = await this.peer.createAnswer();
                     // 接收端设置本地 answer 描述
@@ -112,14 +112,14 @@
             },
             async onGetAnswer(data) {
                 try {
-                    await this.peer.setRemoteDescription(JSON.parse(data.sdp)); // 呼叫端设置远程 answer 描述
+                    await this.peer.setRemoteDescription(data.sdp); // 呼叫端设置远程 answer 描述
                 } catch (e) {
                     console.log('onAnswer: ', e);
                 }
             },
             async onGetICE(data) {
                 try {
-                    await this.peer.addIceCandidate(JSON.parse(data.sdp)); // 设置远程 ICE
+                    await this.peer.addIceCandidate(data.sdp); // 设置远程 ICE
                 } catch (e) {
                     console.log('onICE: ', e);
                 }
