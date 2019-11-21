@@ -87,7 +87,7 @@
             connectSrv () {
                 let url;
                 if (env === 'development') {
-                    url = 'http://192.168.31.15:8081/mf-edu/endpointVideo';
+                    url = 'http://192.168.31.45:8081/mf-edu/endpointVideo';
                 } else {
                     url = 'http://111.231.135.83/hsd-server/endpointVideo';
                 }
