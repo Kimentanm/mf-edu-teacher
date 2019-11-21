@@ -121,7 +121,7 @@
                 try {
                     await this.peer.addIceCandidate(JSON.parse(data.sdp)); // 设置远程 ICE
                 } catch (e) {
-                    console.log('onAnswer: ', e);
+                    console.log('onICE: ', e);
                 }
             },
         },
