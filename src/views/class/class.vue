@@ -10,6 +10,8 @@
                 <h5>test</h5>
             </div>
         </div>
+
+        <error-tip-modal ref="errorTip"></error-tip-modal>
     </div>
 </template>
 
@@ -42,10 +44,13 @@
                     this.localstream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
                     let video = document.querySelector('#rtcA');
                     video.srcObject = this.localstream;
+                    this.initPeer(data); // 获取到媒体流后，调用函数初始化 RTCPeerConnection
                 } catch (e) {
-                    console.log('getUserMedia: ', e)
+                    console.log('getUserMedia: ', e.name)
+                    if (e.name === 'NotReadableError') {
+                        this.$refs.errorTip.show('摄像头被占用');
+                    }
                 }
-                this.initPeer(data); // 获取到媒体流后，调用函数初始化 RTCPeerConnection
             },
             initPeer(data) {
                 // 创建输出端 PeerConnection
