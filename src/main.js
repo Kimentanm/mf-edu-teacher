@@ -10,9 +10,9 @@ import ErrorTipModal from "@/views/shared/errorTipModal";
 
 Vue.use(VueStomp);
 Vue.use(VueBus);
-Vue.component(ErrorTipModal);
-
+Vue.use(ErrorTipModal);
 Vue.use(ViewUI);
+
 Vue.config.productionTip = false;
 
 new Vue({

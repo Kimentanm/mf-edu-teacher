@@ -16,9 +16,10 @@
 </template>
 
 <script>
+    import ErrorTipModal from "../shared/errorTipModal";
     export default {
         name: "class",
-        components: {},
+        components: {ErrorTipModal},
         data() {
             return {
                 localstream: undefined,
@@ -60,7 +61,7 @@
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
                     if (event.candidate) {
-                        let message = {sender: this.userId, receiver: 276, sdp: event.candidate};
+                        let message = {sender: this.userId, receiver: 1, sdp: event.candidate};
                         this.$stompClient.send('/sendICE', JSON.stringify(message), {});
                     }
                 };
@@ -70,6 +71,7 @@
                     let video = document.querySelector('#rtcB');
                     video.srcObject = event.stream;
                 };
+                // this.createOffer();
             },
             async createOffer(data) { // 创建并发送 offer
                 try {
@@ -78,7 +80,7 @@
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
                     // 给对方发送 offer
-                    let message = {sender: this.userId, receiver: 276, sdp: offer};
+                    let message = {sender: this.userId, receiver: 1, sdp: offer};
                     this.$stompClient.send('/sendOffer', JSON.stringify(message), {});
                     // socket.emit('1v1offer', {account: data.self, self: this.account, sdp: offer});
                 } catch (e) {
@@ -92,7 +94,7 @@
             async onGetOffer(data) {
                 try {
                     // 接收端设置远程 offer 描述
-                    await this.peer.setRemoteDescription(data.sdp);
+                    await this.peer.setRemoteDescription(JSON.parse(data.sdp));
                     // 接收端创建 answer
                     let answer = await this.peer.createAnswer();
                     // 接收端设置本地 answer 描述
@@ -100,7 +102,7 @@
                     // 给对方发送 answer
                     let message = {
                         sender: this.userId,
-                        receiver: 276,
+                        receiver: 1,
                         sdp: answer
                     };
                     this.$stompClient.send('/sendAnswer', JSON.stringify(message), {});
@@ -110,14 +112,14 @@
             },
             async onGetAnswer(data) {
                 try {
-                    await this.peer.setRemoteDescription(data.sdp); // 呼叫端设置远程 answer 描述
+                    await this.peer.setRemoteDescription(JSON.parse(data.sdp)); // 呼叫端设置远程 answer 描述
                 } catch (e) {
                     console.log('onAnswer: ', e);
                 }
             },
             async onGetICE(data) {
                 try {
-                    await this.peer.addIceCandidate(data.sdp); // 设置远程 ICE
+                    await this.peer.addIceCandidate(JSON.parse(data.sdp)); // 设置远程 ICE
                 } catch (e) {
                     console.log('onAnswer: ', e);
                 }

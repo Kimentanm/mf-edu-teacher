@@ -78,7 +78,7 @@
             onGetAnswer (data) {
                 this.$bus.emit('on-getAnswer', data.body)
             },
-            onGetICE() {
+            onGetICE(data) {
                 this.$bus.emit('on-getICE', data.body)
             },
             onFailed (frame) {
