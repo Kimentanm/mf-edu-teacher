@@ -4,7 +4,7 @@ import { getToken, clearToken } from '@/libs/util'
 
 let baseUrl = "";
 if (process.env.NODE_ENV === 'development') {
-    baseUrl = 'http://192.168.31.45:8081/mf-edu';
+    baseUrl = 'http://localhost:8081/mf-edu';
 } else {
     baseUrl = 'http://localhost:8081/mf-edu'
 }
