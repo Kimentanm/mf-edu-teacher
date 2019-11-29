@@ -249,7 +249,6 @@
 <style lang="less">
     @import "./home.less";
     @import "./components/styles/to-do-list-item.less";
-    @import "../../assets/styles/common.less";
     .home {
         height: 100%;
         width: 100%;

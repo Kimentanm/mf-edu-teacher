@@ -123,6 +123,7 @@
 </script>
 
 <style lang="less">
+    @import "../../assets/styles/common.less";
     .main {
         .ivu-layout-header {
             padding: 0 16px;
