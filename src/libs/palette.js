@@ -156,7 +156,7 @@ class Palette {
         this.paint.closePath();
         this.paint.clip();
         this.paint.clearRect(0, 0, width, height);
-        this.paint.fillStyle = '#fff';
+        this.paint.fillStyle = 'transparent';
         this.paint.fillRect(0, 0, width, height);
         this.paint.restore();
     }
@@ -179,7 +179,7 @@ class Palette {
     clear() { // 清屏
         this.imgData = [];
         this.paint.clearRect(0, 0, this.width, this.height);
-        this.paint.fillStyle = '#fff';
+        this.paint.fillStyle = 'transparent';
         this.paint.fillRect(0, 0, this.width, this.height);
         this.gatherImage();
     }

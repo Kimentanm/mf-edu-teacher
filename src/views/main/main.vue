@@ -68,11 +68,16 @@
                 this.setMenuList(menuList);
             },
             onConnected (frame) {
-                this.$stompClient.subscribe('/topic/sendOffer/' + this.userId, this.onMessage, this.onFailed);
+                // 视频通话
+                this.$stompClient.subscribe('/topic/sendOffer/' + this.userId, this.onGetOffer, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendAnswer/' + this.userId, this.onGetAnswer, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendICE/' + this.userId, this.onGetICE, this.onFailed);
+                // 白板共享
+                this.$stompClient.subscribe('/topic/sendPaletteOffer/' + this.userId, this.onGetPaletteOffer, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendPaletteAnswer/' + this.userId, this.onGetPaletteAnswer, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendPaletteICE/' + this.userId, this.onGetPaletteICE, this.onFailed);
             },
-            onMessage (data) {
+            onGetOffer (data) {
                 if (data.body) {
                     this.$bus.emit('on-getOffer', JSON.parse(data.body))
                 }
@@ -85,6 +90,21 @@
             onGetICE(data) {
                 if (data.body) {
                     this.$bus.emit('on-getICE', JSON.parse(data.body))
+                }
+            },
+            onGetPaletteOffer (data) {
+                if (data.body) {
+                    this.$bus.emit('on-getPaletteOffer', JSON.parse(data.body))
+                }
+            },
+            onGetPaletteAnswer (data) {
+                if (data.body) {
+                    this.$bus.emit('on-getPaletteAnswer', JSON.parse(data.body))
+                }
+            },
+            onGetPaletteICE(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getPaletteICE', JSON.parse(data.body))
                 }
             },
             onFailed (frame) {
