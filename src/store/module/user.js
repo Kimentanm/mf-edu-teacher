@@ -24,7 +24,8 @@ export default {
             return new Promise((resolve, reject) => {
                 login({
                     username: userForm.userName,
-                    password: userForm.password
+                    password: userForm.password,
+                    type: userForm.type
                 }).then(res => {
                     if (res.code === 200) {
                         commit('setToken', res.data);

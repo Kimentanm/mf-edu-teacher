@@ -34,8 +34,9 @@
         data() {
             return {
                 loginForm: {
-                    userName: 'admin',
-                    password: '123456'
+                    userName: 'Kimen',
+                    password: '123456',
+                    type: 'TEACHER'
                 },
                 loginFormRules: {
                     userName: [
