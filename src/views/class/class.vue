@@ -2,22 +2,23 @@
     <div class="class">
         <div class="video-container">
             <div>
-                <video id="teacher" autoplay></video>
+                <video id="teacher" autoplay/>
             </div>
             <div>
-                <video id="student" autoplay></video>
+                <video id="student" autoplay/>
             </div>
         </div>
 
-        <draw-board></draw-board>
+        <draw-board v-if="studentId" :student-id="studentId"/>
 
-        <error-tip-modal ref="errorTip"></error-tip-modal>
+        <error-tip-modal ref="errorTip"/>
     </div>
 </template>
 
 <script>
     import ErrorTipModal from "../shared/errorTipModal";
     import DrawBoard from "./draw-board";
+    import { getClassInfo } from "@/api/class";
 
     export default {
         name: "class",
@@ -41,6 +42,8 @@
                         }
                     ]
                 },
+                classroomId: 0,
+                classInfo: {},
             }
         },
         props: {},
@@ -49,6 +52,9 @@
             userId () {
                 return this.$store.state.user.userIdentity.id;
             },
+            studentId() {
+                return this.classInfo?.studentId;
+            }
         },
         methods: {
             async createMedia() {
@@ -81,7 +87,7 @@
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
                     if (event.candidate) {
-                        let message = {sender: this.userId, receiver: 276, sdp: event.candidate};
+                        let message = {sender: this.userId, receiver: this.studentId, sdp: event.candidate};
                         this.$stompClient.send('/sendICE', JSON.stringify(message), {});
                     }
                 };
@@ -97,7 +103,7 @@
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
                     // 给对方发送 offer
-                    let message = {sender: this.userId, receiver: 276, sdp: offer};
+                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer};
                     this.$stompClient.send('/sendOffer', JSON.stringify(message), {});
                 } catch (e) {
                     console.log('createOffer: ', e);
@@ -118,7 +124,7 @@
                     // 给对方发送 answer
                     let message = {
                         sender: this.userId,
-                        receiver: 276,
+                        receiver: this.studentId,
                         sdp: answer
                     };
                     this.$stompClient.send('/sendAnswer', JSON.stringify(message), {});
@@ -145,6 +151,13 @@
                 this.$bus.on('on-getAnswer', this.onGetAnswer);
                 this.$bus.on('on-getICE', this.onGetICE);
             },
+            getClassInfo() {
+                getClassInfo(this.classroomId).then(res => {
+                    if (res.code === 200) {
+                        this.classInfo = res.data;
+                    }
+                });
+            }
         },
         mounted() {
             this.handleWebSocketEvent();
@@ -153,6 +166,10 @@
             });
         },
         created() {
+            this.classroomId = this.$route.params.classroomId;
+            if (this.classroomId) {
+                this.getClassInfo();
+            }
         }
     }
 </script>

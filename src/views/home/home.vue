@@ -64,8 +64,7 @@
                                 :end-val="39"
                                 iconType="md-ionitron"
                                 color="#2d8cf0"
-                                intro-text="我的学生"
-                        ></infor-card>
+                                intro-text="我的学生"/>
                     </Col>
                     <Col span="6">
                         <infor-card
@@ -73,16 +72,16 @@
                                 :end-val="143"
                                 iconType="md-bookmarks"
                                 color="#64d572"
-                                intro-text="我的课件"></infor-card>
+                                intro-text="我的课件"/>
                     </Col>
                     <Col span="6">
-                        <a @click="goToClass">
+                        <a @click="showClass">
                             <infor-card
                                     id-name="collection_count"
                                     :end-val="5"
                                     iconType="md-laptop"
                                     color="#ffd572"
-                                    intro-text="待上课"></infor-card>
+                                    intro-text="待上课"/>
                         </a>
                     </Col>
                     <Col span="6">
@@ -91,9 +90,9 @@
                                 :end-val="538"
                                 iconType="md-thumbs-up"
                                 color="#f25e43"
-                                intro-text="已上课"></infor-card>
+                                intro-text="已上课"/>
                     </Col>
-                    <Spin size="large" fix v-if="countCardLoading"></Spin>
+                    <Spin size="large" fix v-if="countCardLoading"/>
                 </Row>
                 <Row class="marT10">
                     <Card :gutter="10">
@@ -103,19 +102,27 @@
                         </p>
                         <div class="map-con">
                             <Col span="10">
-                                <map-data-table :cityData="projCapacity"></map-data-table>
+                                <map-data-table :cityData="projCapacity"/>
                             </Col>
                             <Col span="14" class="map-incon">
                                 <Row type="flex" justify="center" align="middle" style="height: 100%">
-                                    <home-map :city-data="projCapacity"></home-map>
+                                    <home-map :city-data="projCapacity"/>
                                 </Row>
                             </Col>
                         </div>
                     </Card>
-                    <Spin size="large" fix v-if="mapLoading"></Spin>
+                    <Spin size="large" fix v-if="mapLoading"/>
                 </Row>
             </Col>
         </Row>
+
+        <Modal v-model="classRoomSelectModal" title="请选择教室" width="300px">
+            <Tree :data="classRoomData" :render="renderContent"/>
+            <div slot="footer">
+                <Button @click="classRoomSelectModal = false">取消</Button>
+            </div>
+            <Spin size="large" fix v-if="classRoomLoading"/>
+        </Modal>
     </div>
 </template>
 
@@ -130,6 +137,7 @@
     import mapDataTable from './components/mapDataTable.vue';
     import toDoListItem from './components/toDoListItem.vue';
     import quantityToday from './components/quantityToday.vue';
+    import { getClassRoomListByTeacher } from '@/api/home.js'
 
     export default {
         name: "home",
@@ -171,6 +179,29 @@
                 quantityLoading: false,
                 quantityWeekLoading: false,
                 alarmCountWeekLoading: false,
+                classRoomData: [
+                    {
+                        title: '所有教室',
+                        expand: true,
+                        children: [],
+                        render: (h, { root, node, data }) => {
+                            return h('span', [
+                                h('Icon', {
+                                    props: {
+                                        type: 'md-archive',
+                                        size: 16
+                                    },
+                                    style: {
+                                        marginRight: '8px'
+                                    }
+                                }),
+                                h('span', data.title)
+                            ]);
+                        }
+                    }
+                ],
+                classRoomSelectModal: false,
+                classRoomLoading: false
             }
         },
         props: {},
@@ -187,9 +218,53 @@
             },
         },
         methods: {
-            goToClass() {
+            renderContent(h, { root, node, data }) {
+                return h('a', {
+                    on: {
+                        click: () => {
+                            this.classRoomSelectModal = false;
+                            this.goToClass({classroomId: data.id});
+                        }
+                    }
+                }, [h('Icon', {
+                        props: {
+                            type: 'ios-book',
+                            size: 16
+                        },
+                        style: {
+                            marginRight: '8px'
+                        }
+                    }),
+                    h('span', data.title)
+                ]);
+            },
+            showClass() {
+                this.classRoomSelectModal = true;
+                this.getClassRoomListByTeacher();
+            },
+            getClassRoomListByTeacher() {
+                this.classRoomLoading = true;
+                this.classRoomData[0].children = [];
+                getClassRoomListByTeacher().then(res => {
+                    if (res.code === 200) {
+                        res.data.forEach(item => {
+                            this.classRoomData[0].children.push({
+                                title: item.className + " （ " + item.student?.realName + " ）",
+                                id: item.id
+                            })
+                        })
+                    } else {
+                        this.$Message.error("获取教室列表失败，请联系管理员");
+                    }
+                    this.classRoomLoading = false;
+                }).catch(err => {
+                    this.classRoomLoading = false;
+                })
+            },
+            goToClass(params) {
                 this.$router.push({
-                    name: 'class-index'
+                    name: 'class-index',
+                    params: params
                 })
             },
             addNew() {

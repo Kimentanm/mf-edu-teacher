@@ -63,7 +63,9 @@
                 channel: null
             }
         },
-        props: {},
+        props: {
+            studentId: Number
+        },
         watch: {},
         computed: {
             handleCanvasCursor() {
@@ -84,7 +86,7 @@
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
                     if (event.candidate) {
-                        let message = {sender: this.userId, receiver: 276, sdp: event.candidate};
+                        let message = {sender: this.userId, receiver: this.studentId, sdp: event.candidate};
                         this.$stompClient.send('/sendPaletteICE', JSON.stringify(message), {});
                     }
                 };
@@ -109,7 +111,7 @@
                 this.myIframeWindow.postMessage("preAnim", '*');
                 let message = {
                     sender: this.userId,
-                    receiver: 276,
+                    receiver: this.studentId,
                 };
                 this.$stompClient.send('/back', JSON.stringify(message), {});
             },
@@ -117,7 +119,7 @@
                 this.myIframeWindow.postMessage("nextAnim", '*');
                 let message = {
                     sender: this.userId,
-                    receiver: 276,
+                    receiver: this.studentId,
                 };
                 this.$stompClient.send('/next', JSON.stringify(message), {});
             },
@@ -149,7 +151,12 @@
                 this.allowGo = !go;
             },
             moveCallback(...arr) {
-                this.channel.send(JSON.stringify(arr));
+                let data = {
+                    width: this.$refs['canvas'].width,
+                    height: this.$refs['canvas'].height,
+                    arr: [...arr]
+                };
+                this.channel.send(JSON.stringify(data));
             },
             async onGetPaletteOffer(data) {
                 try {
@@ -161,7 +168,7 @@
                     await this.peer.setLocalDescription(answer);
                     let message = {
                         sender: this.userId,
-                        receiver: 276,
+                        receiver: this.studentId,
                         sdp: answer
                     };
                     this.$stompClient.send('/sendPaletteAnswer', JSON.stringify(message), {});
@@ -285,9 +292,17 @@
             background-color: rgba(255,255,255, 0.5);
 
             &-content {
+                position: relative;
                 height: 100%;
                 display: flex;
                 align-items: center;
+
+                /*.leave-class-btn {*/
+                /*    position: absolute;*/
+                /*    bottom: 14px;*/
+                /*    left: 50%;*/
+                /*    transform: translateX(-50%)*/
+                /*}*/
 
                 .toolbar-line-width {
                     min-width: 86px;
