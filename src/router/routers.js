@@ -28,5 +28,15 @@ export default [
             }
         ]
     },
+    {
+        path: '/class',
+        name: 'class',
+        meta: {
+            icon: 'md-laptop',
+            title: '课堂',
+            hideInMenu: true
+        },
+        component: () => import('@/views/class/class.vue')
+    },
     ...appRouters,
 ]

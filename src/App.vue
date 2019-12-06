@@ -11,7 +11,6 @@
    * @returns {boolean}
    */
   window.onkeydown = (e) => {
-    console.log(1);
     const ev = window.event || e;
     const code = ev.keyCode || ev.which;
     if (code === 82 && (ev.metaKey || ev.ctrlKey)) {

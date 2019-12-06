@@ -263,7 +263,7 @@
             },
             goToClass(params) {
                 this.$router.push({
-                    name: 'class-index',
+                    name: 'class',
                     params: params
                 })
             },

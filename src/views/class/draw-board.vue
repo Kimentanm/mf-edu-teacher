@@ -32,10 +32,13 @@
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
+                <Tooltip class="start-class" :content="startClassFlag ? '暂停上课' : '开始上课'" placement="left" :offset="-4" theme="light">
+                    <Button @click="startClass" type="error" shape="circle" :icon="startClassFlag ? 'md-pause' : 'md-play'" />
+                </Tooltip>
             </div>
         </div>
         <div ref="palette-content" class="palette-content" :class="handleCanvasCursor">
-            <canvas ref="canvas"></canvas>
+            <canvas ref="canvas" />
         </div>
     </div>
 </template>
@@ -60,7 +63,9 @@
                 allowCancel: true,
                 allowGo: true,
                 peer: null,
-                channel: null
+                channel: null,
+                startClassFlag: false,
+                lastEvent: ''
             }
         },
         props: {
@@ -76,7 +81,10 @@
                     default:
                 }
                 return result;
-            }
+            },
+            userId () {
+                return this.$store.state.user.userIdentity.id;
+            },
         },
         methods: {
             initPeer() {
@@ -91,9 +99,9 @@
                     }
                 };
             },
-
             handleClick(type) {
                 if (['cancel', 'go', 'clear'].includes(type)) {
+                    this.moveCallback(type);
                     this.palette[type]();
                     return;
                 }
@@ -156,7 +164,17 @@
                     height: this.$refs['canvas'].height,
                     arr: [...arr]
                 };
-                this.channel.send(JSON.stringify(data));
+                if (data.arr[0] !== 'gatherImage') {
+                    this.lastEvent = data.arr[0];
+                }
+                if (this.lastEvent === 'gatherImage') {
+                    return;
+                }
+                this.lastEvent = data.arr[0];
+                try {
+                    this.channel.send(JSON.stringify(data));
+                } catch (e) {
+                }
             },
             async onGetPaletteOffer(data) {
                 try {
@@ -195,6 +213,19 @@
                 this.$bus.on('on-getPaletteAnswer', this.onGetPaletteAnswer);
                 this.$bus.on('on-getPaletteICE', this.onGetPaletteICE);
             },
+            async createPaletteOffer() { // 建立DataChannel，创建并发送 offer
+                try {
+                    // 创建offer
+                    let offer = await this.peer.createOffer(this.offerOption);
+                    // 呼叫端设置本地 offer 描述
+                    await this.peer.setLocalDescription(offer);
+                    // 给对方发送 offer
+                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer};
+                    this.$stompClient.send('/sendPaletteOffer', JSON.stringify(message), {});
+                } catch (e) {
+                    console.log('createOffer: ', e);
+                }
+            },
             createDataChannel() { // 创建 DataChannel
                 try{
                     this.channel = this.peer.createDataChannel('messagechannel');
@@ -224,6 +255,14 @@
                     this.palette[type](...arr);
                 };
             },
+            startClass() {
+                if (this.startClassFlag) {
+                    this.startClassFlag = false;
+                } else {
+                    this.createPaletteOffer();
+                    this.startClassFlag = true;
+                }
+            }
         },
         mounted() {
             this.myIframeWindow = document.getElementById('my-iframe').contentWindow;
@@ -297,12 +336,23 @@
                 display: flex;
                 align-items: center;
 
+                .ivu-color-picker .ivu-select-dropdown {
+                    left: -221px;
+                }
+
                 /*.leave-class-btn {*/
                 /*    position: absolute;*/
                 /*    bottom: 14px;*/
                 /*    left: 50%;*/
                 /*    transform: translateX(-50%)*/
                 /*}*/
+
+                .start-class {
+                    position: absolute;
+                    bottom: 10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                }
 
                 .toolbar-line-width {
                     min-width: 86px;

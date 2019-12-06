@@ -1,15 +1,32 @@
 <template>
     <div class="class">
-        <div class="video-container">
-            <div>
-                <video id="teacher" autoplay/>
-            </div>
-            <div>
-                <video id="student" autoplay/>
-            </div>
+        <div class="header-bar">
+            <Menu mode="horizontal" theme="dark" active-name="1" style="height: 100%;padding: 0 16px;">
+                <div class="layout-logo"></div>
+                <div class="custom-bar">
+                    <h2>{{classInfo.className}}</h2>
+                </div>
+                <div class="layout-nav">
+                    <Tooltip content="离开教室">
+                        <MenuItem name="login-out">
+                            <Button type="error" icon="md-close" shape="circle" @click="goToHome"/>
+                        </MenuItem>
+                    </Tooltip>
+                </div>
+            </Menu>
         </div>
+        <div class="main-content">
+            <div class="video-container">
+                <div>
+                    <video id="teacher" autoplay/>
+                </div>
+                <div>
+                    <video id="student" autoplay/>
+                </div>
+            </div>
 
-        <draw-board v-if="studentId" :student-id="studentId"/>
+            <draw-board ref="draw-board" v-if="studentId" :student-id="studentId"/>
+        </div>
 
         <error-tip-modal ref="errorTip"/>
     </div>
@@ -19,10 +36,11 @@
     import ErrorTipModal from "../shared/errorTipModal";
     import DrawBoard from "./draw-board";
     import { getClassInfo } from "@/api/class";
+    import HeaderBar from '../main/components/header-bar'
 
     export default {
         name: "class",
-        components: {DrawBoard, ErrorTipModal},
+        components: {DrawBoard, ErrorTipModal, HeaderBar},
         data() {
             return {
                 localStream: undefined,
@@ -57,6 +75,12 @@
             }
         },
         methods: {
+            goToHome() {
+                this.$destroy();
+                this.$router.replace({
+                    name: 'home'
+                })
+            },
             async createMedia() {
                 // 保存本地流到全局
                 try {
@@ -95,10 +119,12 @@
                     let video = document.querySelector('#student');
                     video.srcObject = event.stream;
                 };
+                this.sendStartRequest();
             },
-            async createOffer(data) { // 创建并发送 offer
+            async createOffer() { // 创建并发送 offer
                 try {
                     // 创建offer
+                    console.log(this.peer);
                     let offer = await this.peer.createOffer(this.offerOption);
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
@@ -146,24 +172,43 @@
                     console.log('onICE: ', e.name, e.message);
                 }
             },
+            onGetStartRequest(data) {
+                let message = {
+                    sender: this.userId,
+                    receiver: this.studentId,
+                };
+                this.$stompClient.send('/sendStartResponse', JSON.stringify(message), {});
+            },
+            onGetStartResponse(data) {
+                this.createOffer();
+            },
             handleWebSocketEvent() {
                 this.$bus.on('on-getOffer', this.onGetOffer);
                 this.$bus.on('on-getAnswer', this.onGetAnswer);
                 this.$bus.on('on-getICE', this.onGetICE);
+                this.$bus.on('on-getStartRequest', this.onGetStartRequest);
+                this.$bus.on('on-getStartResponse', this.onGetStartResponse);
             },
             getClassInfo() {
                 getClassInfo(this.classroomId).then(res => {
                     if (res.code === 200) {
                         this.classInfo = res.data;
+                        this.$nextTick(() => {
+                            this.createMedia();
+                        });
                     }
                 });
-            }
+            },
+            sendStartRequest() {
+                let message = {
+                    sender: this.userId,
+                    receiver: this.studentId,
+                };
+                this.$stompClient.send('/sendStartRequest', JSON.stringify(message), {});
+            },
         },
         mounted() {
             this.handleWebSocketEvent();
-            this.$nextTick(() => {
-                this.createMedia();
-            });
         },
         created() {
             this.classroomId = this.$route.params.classroomId;
@@ -179,15 +224,72 @@
         position: relative;
         height: 100%;
         width: 100%;
+        background-image: url('../../assets/images/class-background.jpg');
+        background-size: cover;
+        background-position: center;
 
-        .video-container{
-            width: 240px;
-            display: inline-block;
+        .header-bar {
+            height: 64px;
 
-            video{
-                width: 100%;
-                height: 180px;
-                background-color: #000;
+            .layout-logo{
+                width: 100px;
+                height: 30px;
+                background: #5b6270;
+                border-radius: 3px;
+                float: left;
+                position: relative;
+                top: 15px;
+                left: 20px;
+            }
+
+            .custom-bar {
+                width: 200px;
+                height: 100%;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+
+                h2 {
+                    height: 100%;
+                    color: #fff;
+                    text-align: center;
+                }
+            }
+
+            .layout-nav{
+                height: 100%;
+                float: right;
+
+                .ivu-menu-item {
+                    height: 100%;
+                    padding: 0 10px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .ivu-tooltip {
+                    height: 100%;
+
+                    .ivu-tooltip-rel {
+                        height: 100%;
+                    }
+                }
+            }
+        }
+
+        .main-content {
+            height: ~'calc(100% - 64px)';
+            padding: 16px;
+
+            .video-container{
+                width: 240px;
+                display: inline-block;
+
+                video{
+                    width: 100%;
+                    height: 180px;
+                    background-color: #000;
+                }
             }
         }
     }

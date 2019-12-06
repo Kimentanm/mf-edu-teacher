@@ -2,10 +2,10 @@
     <div class="main">
         <Layout :style="{minHeight: '100vh'}">
             <Header>
-                <header-bar :routeName="routeName"></header-bar>
+                <header-bar></header-bar>
             </Header>
             <Layout>
-                <Sider v-if="sidebarHide" class="menu-slider" collapsible :collapsed-width="78" :width="140" v-model="isCollapsed">
+                <Sider class="menu-slider" collapsible :collapsed-width="78" :width="140" v-model="isCollapsed">
                     <side-menu :menuList="menuList" :isCollapsed="isCollapsed"></side-menu>
                 </Sider>
                 <Layout class="main-layout">
@@ -51,9 +51,6 @@
             userId () {
                 return this.$store.state.user.userIdentity.id;
             },
-            sidebarHide() {
-                return this.routeName !== 'class-index'
-            },
             menuList() {
                 return this.$store.state.app.menuList
             },
@@ -76,6 +73,19 @@
                 this.$stompClient.subscribe('/topic/sendPaletteOffer/' + this.userId, this.onGetPaletteOffer, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendPaletteAnswer/' + this.userId, this.onGetPaletteAnswer, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendPaletteICE/' + this.userId, this.onGetPaletteICE, this.onFailed);
+                // 开始上课请求
+                this.$stompClient.subscribe('/topic/sendStartRequest/' + this.userId, this.onGetStartRequest, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendStartResponse/' + this.userId, this.onGetStartResponse, this.onFailed);
+            },
+            onGetStartRequest(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getStartRequest', JSON.parse(data.body))
+                }
+            },
+            onGetStartResponse(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getStartResponse', JSON.parse(data.body))
+                }
             },
             onGetOffer (data) {
                 if (data.body) {

@@ -2,11 +2,6 @@
     <div class="header-bar">
         <Menu :active-name="activeName" mode="horizontal" theme="dark" active-name="1" style="height: 100%">
             <div class="layout-logo"></div>
-            <div class="custom-bar">
-                <div v-if="routeName === 'class-index'" class="class-bar">
-                    <Button type="error" icon="md-close" shape="circle" @click="$router.go(-1)"></Button>
-                </div>
-            </div>
             <div class="layout-nav">
                 <Tooltip content="退出登录">
                     <MenuItem name="login-out">
@@ -29,9 +24,7 @@
                 activeName: ''
             }
         },
-        props: {
-            routeName: String
-        },
+        props: {},
         watch: {},
         computed: {},
         methods: {
@@ -64,19 +57,6 @@
             position: relative;
             top: 15px;
             left: 20px;
-        }
-
-        .custom-bar {
-            width: 200px;
-            height: 100%;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-
-            .class-bar {
-                height: 100%;
-                text-align: center;
-            }
         }
 
         .layout-nav{
