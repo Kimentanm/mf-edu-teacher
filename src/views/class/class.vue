@@ -18,7 +18,7 @@
         <div class="main-content">
             <div class="video-container">
                 <div>
-                    <video id="teacher" autoplay/>
+                    <video muted id="teacher" autoplay/>
                 </div>
                 <div>
                     <video id="student" autoplay/>
@@ -83,12 +83,9 @@
             },
             async createMedia() {
                 // 保存本地流到全局
+                this.localStream = null;
                 try {
-                    this.localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
-                    let video = document.querySelector('#teacher');
-                    video['disablePictureInPicture'] = true;
-                    video.srcObject = this.localStream;
-                    this.initPeer(); // 获取到媒体流后，调用函数初始化 RTCPeerConnection
+                    this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
                 } catch (e) {
                     switch (e.name) {
                         case 'NotReadableError' : {
@@ -97,10 +94,32 @@
                         }
                         case 'NotFoundError' : {
                             console.log('没有摄像头');
+                            try {
+                                this.localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+                            } catch (e) {
+                                switch (e.name) {
+                                    case 'NotReadableError' : {
+                                        this.$refs.errorTip.show('摄像头被占用');
+                                        break;
+                                    }
+                                    case 'NotFoundError' : {
+                                        console.log('没有摄像头');
+                                        break;
+                                    }
+                                    default: console.log('getUserMedia: ', e.name)
+                                }
+                            }
                             break;
                         }
                         default: console.log('getUserMedia: ', e.name)
                     }
+                }
+                if (this.localStream != null) {
+                    let video = document.querySelector('#teacher');
+                    video['disablePictureInPicture'] = true;
+                    video.srcObject = this.localStream;
+                    this.initPeer(); // 获取到媒体流后，调用函数初始化 RTCPeerConnection
+                    this.sendStartRequest();
                 }
             },
             initPeer() {
@@ -119,12 +138,10 @@
                     let video = document.querySelector('#student');
                     video.srcObject = event.stream;
                 };
-                this.sendStartRequest();
             },
             async createOffer() { // 创建并发送 offer
                 try {
                     // 创建offer
-                    console.log(this.peer);
                     let offer = await this.peer.createOffer(this.offerOption);
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
@@ -172,7 +189,8 @@
                     console.log('onICE: ', e.name, e.message);
                 }
             },
-            onGetStartRequest(data) {
+            onGetStartRequest() {
+                this.initPeer();
                 let message = {
                     sender: this.userId,
                     receiver: this.studentId,
@@ -182,12 +200,21 @@
             onGetStartResponse(data) {
                 this.createOffer();
             },
-            handleWebSocketEvent() {
+            handleOnWebSocketEvent() {
                 this.$bus.on('on-getOffer', this.onGetOffer);
                 this.$bus.on('on-getAnswer', this.onGetAnswer);
                 this.$bus.on('on-getICE', this.onGetICE);
                 this.$bus.on('on-getStartRequest', this.onGetStartRequest);
                 this.$bus.on('on-getStartResponse', this.onGetStartResponse);
+                this.$bus.on('on-getCloseRequest', this.closeConnection);
+            },
+            handleOffWebSocket() {
+                this.$bus.off('on-getOffer', this.onGetOffer);
+                this.$bus.off('on-getAnswer', this.onGetAnswer);
+                this.$bus.off('on-getICE', this.onGetICE);
+                this.$bus.off('on-getStartRequest', this.onGetStartRequest);
+                this.$bus.off('on-getStartResponse', this.onGetStartResponse);
+                this.$bus.off('on-getCloseRequest', this.closeConnection);
             },
             getClassInfo() {
                 getClassInfo(this.classroomId).then(res => {
@@ -206,15 +233,33 @@
                 };
                 this.$stompClient.send('/sendStartRequest', JSON.stringify(message), {});
             },
+            closeConnection() {
+                if (this.peer) {
+                    this.peer.close();
+                }
+                this.peer = null;
+            }
         },
         mounted() {
-            this.handleWebSocketEvent();
+            this.handleOnWebSocketEvent();
         },
         created() {
             this.classroomId = this.$route.params.classroomId;
             if (this.classroomId) {
                 this.getClassInfo();
             }
+        },
+        beforeDestroy() {
+            this.handleOffWebSocket();
+            let message = {
+                sender: this.userId,
+                receiver: this.studentId,
+            };
+            this.$stompClient.send('/sendCloseRequest', JSON.stringify(message), {});
+        },
+        destroyed() {
+            this.localStream = null;
+            this.closeConnection();
         }
     }
 </script>

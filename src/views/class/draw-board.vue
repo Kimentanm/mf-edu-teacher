@@ -52,7 +52,7 @@
         components: {},
         data() {
             return {
-                url: 'http://ow365.cn/?i=20087&n=5&furl=http://www.amaxchina.xyz/download/test.pptx',
+                url: 'http://ow365.cn/?i=20059&n=5&furl=http://111.231.135.83/download/test.pptx',
                 myIframeWindow: {},
                 color: '#ed4014',
                 recommendColors: ['#2d8cf0', '#5cadff', '#2b85e4', '#2db7f5', '#19be6b', '#ff9900',
@@ -208,10 +208,15 @@
                     console.log('onAnswer: ', e);
                 }
             },
-            handleWebSocketEvent() {
+            handleOnWebSocketEvent() {
                 this.$bus.on('on-getPaletteOffer', this.onGetPaletteOffer);
                 this.$bus.on('on-getPaletteAnswer', this.onGetPaletteAnswer);
                 this.$bus.on('on-getPaletteICE', this.onGetPaletteICE);
+            },
+            handleOffWebSocketEvent() {
+                this.$bus.off('on-getPaletteOffer', this.onGetPaletteOffer);
+                this.$bus.off('on-getPaletteAnswer', this.onGetPaletteAnswer);
+                this.$bus.off('on-getPaletteICE', this.onGetPaletteICE);
             },
             async createPaletteOffer() { // 建立DataChannel，创建并发送 offer
                 try {
@@ -266,10 +271,10 @@
         },
         mounted() {
             this.myIframeWindow = document.getElementById('my-iframe').contentWindow;
-            this.handleWebSocketEvent();
-            window.onresize = () => {
-                this.handlePaletteResize();
-            };
+            this.handleOnWebSocketEvent();
+            window.addEventListener('resize', () => {
+                this.handlePaletteResize()
+            });
             this.$nextTick(async () => {
                 this.handlePaletteResize();
                 this.initPalette();
@@ -286,6 +291,12 @@
             Mousetrap.bind(['command+shift+z', 'ctrl+shift+z'], () => {
                 this.handleClick('go');
                 return false;
+            });
+        },
+        beforeDestroy() {
+            this.handleOffWebSocketEvent();
+            window.removeEventListener('resize', () => {
+                this.handlePaletteResize()
             });
         }
     }

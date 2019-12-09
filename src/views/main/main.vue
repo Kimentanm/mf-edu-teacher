@@ -76,6 +76,13 @@
                 // 开始上课请求
                 this.$stompClient.subscribe('/topic/sendStartRequest/' + this.userId, this.onGetStartRequest, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendStartResponse/' + this.userId, this.onGetStartResponse, this.onFailed);
+                // 离开房间
+                this.$stompClient.subscribe('/topic/sendCloseRequest/' + this.userId, this.onGetCloseRequest, this.onFailed);
+            },
+            onGetCloseRequest(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getCloseRequest', JSON.parse(data.body))
+                }
             },
             onGetStartRequest(data) {
                 if (data.body) {
