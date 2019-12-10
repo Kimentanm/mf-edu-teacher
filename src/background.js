@@ -51,6 +51,8 @@ function createWindow() {
   win.on('closed', () => {
     win = null
   })
+
+  //TODO 单开
 }
 
 // Quit when all windows are closed.

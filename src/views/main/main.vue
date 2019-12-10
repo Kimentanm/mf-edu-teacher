@@ -26,10 +26,9 @@
     import {mapMutations} from 'vuex'
     import HeaderBar from './components/header-bar'
     import SideMenu from './components/side-menu';
-    import env from '../../config/env';
+    import baseUrl from '../../config/url'
 
     export default {
-        name: "main",
         components: {HeaderBar, SideMenu},
         data() {
             return {
@@ -128,12 +127,7 @@
                 console.log('连接失败：' + frame);
             },
             connectSrv () {
-                let url;
-                if (env === 'development') {
-                    url = 'http://localhost:8081/mf-edu/endpointVideo';
-                } else {
-                    url = 'http://111.231.135.83/hsd-server/endpointVideo';
-                }
+                let url = baseUrl + '/endpointVideo';
                 this.connetWM(url, {}, this.onConnected, this.onConnectionInactive);
             },
             onConnectionInactive (errorEvent) {

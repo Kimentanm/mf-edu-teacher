@@ -4,7 +4,11 @@
             <Menu mode="horizontal" theme="dark" active-name="1" style="height: 100%;padding: 0 16px;">
                 <div class="layout-logo"></div>
                 <div class="custom-bar">
-                    <h2>{{classInfo.className}}</h2>
+                    <h2>{{classInfo.className}}
+                        <div v-if="online" class="student-signal online"></div>
+                        <Tooltip class="student-signal outline" v-else :content="outlineTypeTip">
+                        </Tooltip>
+                    </h2>
                 </div>
                 <div class="layout-nav">
                     <Tooltip content="离开教室">
@@ -17,10 +21,11 @@
         </div>
         <div class="main-content">
             <div class="video-container">
-                <div>
+                <div style="position: relative">
+                    <span>{{myVideoTip}}</span>
                     <video muted id="teacher" autoplay/>
                 </div>
-                <div>
+                <div style="position: relative">
                     <video id="student" autoplay/>
                 </div>
             </div>
@@ -62,6 +67,9 @@
                 },
                 classroomId: 0,
                 classInfo: {},
+                myVideoTip: '',
+                online: false,
+                outlineType: 0,
             }
         },
         props: {},
@@ -72,6 +80,15 @@
             },
             studentId() {
                 return this.classInfo?.studentId;
+            },
+            outlineTypeTip() {
+                let tip = '学生未进入课堂';
+                switch (this.outlineType) {
+                    case 0 : tip = '学生未进入课堂'; break;
+                    case 1 : tip = '学生窗口未置顶'; break;
+                    default:
+                }
+                return tip;
             }
         },
         methods: {
@@ -85,24 +102,30 @@
                 // 保存本地流到全局
                 this.localStream = null;
                 try {
+                    this.myVideoTip = "";
                     this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
                 } catch (e) {
                     switch (e.name) {
                         case 'NotReadableError' : {
+                            this.myVideoTip = '摄像头被占用';
                             this.$refs.errorTip.show('摄像头被占用');
                             break;
                         }
                         case 'NotFoundError' : {
+                            this.myVideoTip = '没有摄像头';
                             console.log('没有摄像头');
                             try {
+                                this.myVideoTip = "";
                                 this.localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
                             } catch (e) {
                                 switch (e.name) {
                                     case 'NotReadableError' : {
+                                        this.myVideoTip = '摄像头被占用';
                                         this.$refs.errorTip.show('摄像头被占用');
                                         break;
                                     }
                                     case 'NotFoundError' : {
+                                        this.myVideoTip = '没有摄像头';
                                         console.log('没有摄像头');
                                         break;
                                     }
@@ -126,7 +149,9 @@
                 // 创建输出端 PeerConnection
                 let PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
                 this.peer = new PeerConnection(this.iceServers);
-                this.peer.addStream(this.localStream); // 添加本地流
+                if (this.localStream) {
+                    this.peer.addStream(this.localStream); // 添加本地流
+                }
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
                     if (event.candidate) {
@@ -191,6 +216,8 @@
             },
             onGetStartRequest() {
                 this.initPeer();
+                this.online = true;
+                console.log(this.online);
                 let message = {
                     sender: this.userId,
                     receiver: this.studentId,
@@ -199,6 +226,7 @@
             },
             onGetStartResponse(data) {
                 this.createOffer();
+                this.online = true;
             },
             handleOnWebSocketEvent() {
                 this.$bus.on('on-getOffer', this.onGetOffer);
@@ -234,6 +262,8 @@
                 this.$stompClient.send('/sendStartRequest', JSON.stringify(message), {});
             },
             closeConnection() {
+                this.online = false;
+                this.outlineType = 0;
                 if (this.peer) {
                     this.peer.close();
                 }
@@ -258,6 +288,7 @@
             this.$stompClient.send('/sendCloseRequest', JSON.stringify(message), {});
         },
         destroyed() {
+            this.outlineType = 0;
             this.localStream = null;
             this.closeConnection();
         }
@@ -294,10 +325,30 @@
                 left: 50%;
                 transform: translateX(-50%);
 
+                .student-signal {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    position: absolute;
+                    top: 50%;
+                    right: 44px;
+                    transform: translateY(-50%);
+                }
+
+                .outline {
+                    background-color: #ed4014;
+                }
+
+                .online {
+                    background-color: #19be6b;
+                }
+
                 h2 {
                     height: 100%;
                     color: #fff;
                     text-align: center;
+                    line-height: 64px;
+                    position: relative;
                 }
             }
 
@@ -329,6 +380,13 @@
             .video-container{
                 width: 240px;
                 display: inline-block;
+
+                span {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
 
                 video{
                     width: 100%;

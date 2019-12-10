@@ -1,5 +1,5 @@
 <template>
-    <Modal v-model="show" :title="title" width="300px" class-name="login-loading" :closable="false">
+    <Modal v-model="show" :title="title" width="300px" class-name="login-loading" :closable="false" :mask-closable="false">
         <Spin>
             <Icon type="ios-loading" size=18 class="spin-icon-load"></Icon>
         </Spin>

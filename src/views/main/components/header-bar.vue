@@ -5,20 +5,23 @@
             <div class="layout-nav">
                 <Tooltip content="退出登录">
                     <MenuItem name="login-out">
-                        <Icon type="md-log-out" size="26" @click="loginOut"/>
+                        <Icon type="md-log-out" size="26" @click="showLogoutModal"/>
                     </MenuItem>
                 </Tooltip>
             </div>
         </Menu>
+
+        <message-tip-modal ref="logoutTip" @on-sure="loginOut"></message-tip-modal>
     </div>
 </template>
 
 <script>
     import { mapActions } from 'vuex'
+    import MessageTipModal from "../../shared/messageTipModal";
 
     export default {
         name: "header-bar",
-        components: {},
+        components: {MessageTipModal},
         data() {
             return {
                 activeName: ''
@@ -31,6 +34,9 @@
             ...mapActions([
                 'handleLogOut'
             ]),
+            showLogoutModal() {
+                this.$refs.logoutTip.show("是否退出当前账号？");
+            },
             loginOut() {
                 this.handleLogOut().then(() => {
                     this.$router.push({

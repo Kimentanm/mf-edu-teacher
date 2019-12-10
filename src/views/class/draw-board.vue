@@ -52,7 +52,7 @@
         components: {},
         data() {
             return {
-                url: 'http://ow365.cn/?i=20059&n=5&furl=http://111.231.135.83/download/test.pptx',
+                url: 'http://ow365.cn/?i=20191&n=5&furl=http://q1zqh6yul.bkt.clouddn.com/%E6%A1%83%E8%8A%B1%E6%A8%A1%E6%9D%BF.pptx',
                 myIframeWindow: {},
                 color: '#ed4014',
                 recommendColors: ['#2d8cf0', '#5cadff', '#2b85e4', '#2db7f5', '#19be6b', '#ff9900',
@@ -174,6 +174,7 @@
                 try {
                     this.channel.send(JSON.stringify(data));
                 } catch (e) {
+
                 }
             },
             async onGetPaletteOffer(data) {
@@ -249,7 +250,6 @@
                 channel.onopen = (event) => { // 连接成功
                     console.log('channel onopen', event);
                     this.loading = false;
-                    this.initPalette();
                 };
                 channel.onclose = function(event) { // 连接关闭
                     console.log('channel onclose', event)

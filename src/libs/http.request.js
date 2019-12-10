@@ -1,13 +1,7 @@
 import Axios from 'axios'
 import { Message } from 'view-design'
 import { getToken, clearToken } from '@/libs/util'
-
-let baseUrl = "";
-if (process.env.NODE_ENV === 'development') {
-    baseUrl = 'http://localhost:8081/mf-edu';
-} else {
-    baseUrl = 'http://localhost:8081/mf-edu'
-}
+import baseUrl from "../config/url"
 
 class HttpRequest {
     constructor () {

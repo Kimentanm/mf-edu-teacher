@@ -182,7 +182,9 @@
       }
     },
     mounted () {
-      this.init();
+      setTimeout(() => {
+        this.init();
+      });
     }
   };
 </script>
