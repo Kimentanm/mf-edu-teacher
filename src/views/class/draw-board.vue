@@ -1,6 +1,6 @@
 <template>
     <div ref="draw-board-container" class="draw-board-container" style="position: relative">
-        <iframe id="my-iframe" :src="url" frameborder="0"></iframe>
+        <iframe id="my-iframe" :src="baseUrl + url" frameborder="0"></iframe>
         <div class="draw-board-toolbar">
             <div class="draw-board-toolbar-content">
                 <div style="text-align: center">
@@ -32,6 +32,9 @@
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
+                <Tooltip class="reupload-ppt" content="重新上传PPT" placement="left" :offset="-4" theme="light">
+                    <Button @click="pptReupload" type="primary" shape="circle" icon="md-refresh" />
+                </Tooltip>
                 <Tooltip class="start-class" :content="startClassFlag ? '暂停上课' : '开始上课'" placement="left" :offset="-4" theme="light">
                     <Button @click="startClass" type="error" shape="circle" :icon="startClassFlag ? 'md-pause' : 'md-play'" />
                 </Tooltip>
@@ -52,7 +55,7 @@
         components: {},
         data() {
             return {
-                url: 'http://ow365.cn/?i=20191&n=5&furl=http://q1zqh6yul.bkt.clouddn.com/%E6%A1%83%E8%8A%B1%E6%A8%A1%E6%9D%BF.pptx',
+                baseUrl: 'http://ow365.cn/?i=20191&n=5&furl=',
                 myIframeWindow: {},
                 color: '#ed4014',
                 recommendColors: ['#2d8cf0', '#5cadff', '#2b85e4', '#2db7f5', '#19be6b', '#ff9900',
@@ -69,7 +72,8 @@
             }
         },
         props: {
-            studentId: Number
+            studentId: Number,
+            url: String
         },
         watch: {},
         computed: {
@@ -226,7 +230,7 @@
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
                     // 给对方发送 offer
-                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer};
+                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer, content: this.baseUrl + this.url};
                     this.$stompClient.send('/sendPaletteOffer', JSON.stringify(message), {});
                 } catch (e) {
                     console.log('createOffer: ', e);
@@ -259,6 +263,9 @@
                     let [type, ...arr] = JSON.parse(e.data);
                     this.palette[type](...arr);
                 };
+            },
+            pptReupload() {
+                this.$emit('on-ppt-reupload')
             },
             startClass() {
                 if (this.startClassFlag) {
@@ -357,6 +364,13 @@
                 /*    left: 50%;*/
                 /*    transform: translateX(-50%)*/
                 /*}*/
+
+                .reupload-ppt {
+                    position: absolute;
+                    bottom: 50px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                }
 
                 .start-class {
                     position: absolute;

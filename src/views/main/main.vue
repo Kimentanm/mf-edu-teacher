@@ -77,6 +77,19 @@
                 this.$stompClient.subscribe('/topic/sendStartResponse/' + this.userId, this.onGetStartResponse, this.onFailed);
                 // 离开房间
                 this.$stompClient.subscribe('/topic/sendCloseRequest/' + this.userId, this.onGetCloseRequest, this.onFailed);
+                // 学生离焦和聚焦
+                this.$stompClient.subscribe('/topic/sendStudentBlur/' + this.userId, this.onGetStudentBlur, this.onFailed);
+                this.$stompClient.subscribe('/topic/sendStudentFocus/' + this.userId, this.onGetStudentFocus, this.onFailed);
+            },
+            onGetStudentBlur(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getStudentBlur', JSON.parse(data.body))
+                }
+            },
+            onGetStudentFocus(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getStudentFocus', JSON.parse(data.body))
+                }
             },
             onGetCloseRequest(data) {
                 if (data.body) {

@@ -8,7 +8,7 @@
             <span>{{title}}</span>
         </div>
         <div slot="footer">
-            <Button @click="modalSeen = false">知道了</Button>
+            <Button long @click="modalSeen = false">知道了</Button>
         </div>
     </Modal>
 </template>

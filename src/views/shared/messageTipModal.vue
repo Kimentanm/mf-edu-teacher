@@ -8,7 +8,8 @@
             <span>{{title}}</span>
         </div>
         <div slot="footer">
-            <Button @click="sure">确定</Button>
+            <Button @click="modalSeen = false">取消</Button>
+            <Button @click="sure" type="primary">确定</Button>
         </div>
     </Modal>
 </template>

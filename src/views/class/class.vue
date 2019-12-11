@@ -30,7 +30,8 @@
                 </div>
             </div>
 
-            <draw-board ref="draw-board" v-if="studentId" :student-id="studentId"/>
+            <ppt-upload v-if="!pptUrl" @on-upload-success="handleUploadSuccess" />
+            <draw-board else ref="draw-board" v-if="studentId" :student-id="studentId" :url="pptUrl" @on-ppt-reupload="handlePptReupload"/>
         </div>
 
         <error-tip-modal ref="errorTip"/>
@@ -42,10 +43,11 @@
     import DrawBoard from "./draw-board";
     import { getClassInfo } from "@/api/class";
     import HeaderBar from '../main/components/header-bar'
+    import PptUpload from "./ppt-upload";
 
     export default {
         name: "class",
-        components: {DrawBoard, ErrorTipModal, HeaderBar},
+        components: {PptUpload, DrawBoard, ErrorTipModal, HeaderBar},
         data() {
             return {
                 localStream: undefined,
@@ -70,6 +72,7 @@
                 myVideoTip: '',
                 online: false,
                 outlineType: 0,
+                pptUrl: ''
             }
         },
         props: {},
@@ -92,6 +95,12 @@
             }
         },
         methods: {
+            handlePptReupload() {
+                this.pptUrl = '';
+            },
+            handleUploadSuccess(pptUrl) {
+                this.pptUrl = pptUrl;
+            },
             goToHome() {
                 this.$destroy();
                 this.$router.replace({
@@ -235,6 +244,8 @@
                 this.$bus.on('on-getStartRequest', this.onGetStartRequest);
                 this.$bus.on('on-getStartResponse', this.onGetStartResponse);
                 this.$bus.on('on-getCloseRequest', this.closeConnection);
+                this.$bus.on('on-getStudentBlur', this.onGetStudentBlur);
+                this.$bus.on('on-getStudentFocus', this.onGetStudentFocus);
             },
             handleOffWebSocket() {
                 this.$bus.off('on-getOffer', this.onGetOffer);
@@ -243,6 +254,16 @@
                 this.$bus.off('on-getStartRequest', this.onGetStartRequest);
                 this.$bus.off('on-getStartResponse', this.onGetStartResponse);
                 this.$bus.off('on-getCloseRequest', this.closeConnection);
+                this.$bus.off('on-getStudentBlur', this.onGetStudentBlur);
+                this.$bus.off('on-getStudentFocus', this.onGetStudentFocus);
+            },
+            onGetStudentFocus() {
+                this.online = true;
+                this.outlineType = 0;
+            },
+            onGetStudentBlur() {
+                this.online = false;
+                this.outlineType = 1;
             },
             getClassInfo() {
                 getClassInfo(this.classroomId).then(res => {
