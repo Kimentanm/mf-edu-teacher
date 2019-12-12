@@ -45,9 +45,11 @@
             },
             handleUploadError(error, file, fileList) {
                 this.$refs.errorTip.show("PPT上传失败，请重试");
+                this.uploadLoading = false;
             },
             handleFileFormatError(file, fileList) {
                 this.$refs.errorTip.show("请上传PPT文件");
+                this.uploadLoading = false;
             },
             handleBeforeUpload(file) {
                 if (file.type !== 'application/vnd.ms-powerpoint' && file.type !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
@@ -58,6 +60,7 @@
             },
             handleExceededSize() {
                 this.$refs.errorTip.show("请上传小于5M的PPT");
+                this.uploadLoading = false;
             }
         },
         created() {
