@@ -72,7 +72,7 @@
                 this.$stompClient.subscribe('/topic/sendPaletteOffer/' + this.userId, this.onGetPaletteOffer, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendPaletteAnswer/' + this.userId, this.onGetPaletteAnswer, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendPaletteICE/' + this.userId, this.onGetPaletteICE, this.onFailed);
-                // 开始上课请求
+                // 开始视频请求
                 this.$stompClient.subscribe('/topic/sendStartRequest/' + this.userId, this.onGetStartRequest, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendStartResponse/' + this.userId, this.onGetStartResponse, this.onFailed);
                 // 离开房间
@@ -80,6 +80,13 @@
                 // 学生离焦和聚焦
                 this.$stompClient.subscribe('/topic/sendStudentBlur/' + this.userId, this.onGetStudentBlur, this.onFailed);
                 this.$stompClient.subscribe('/topic/sendStudentFocus/' + this.userId, this.onGetStudentFocus, this.onFailed);
+                // 开始上课请求
+                this.$stompClient.subscribe('/topic/sendStartClassResponse/' + this.userId, this.onGetStartClassResponse, this.onFailed);
+            },
+            onGetStartClassResponse(data) {
+                if (data.body) {
+                    this.$bus.emit('on-getStartClassResponse', JSON.parse(data.body))
+                }
             },
             onGetStudentBlur(data) {
                 if (data.body) {

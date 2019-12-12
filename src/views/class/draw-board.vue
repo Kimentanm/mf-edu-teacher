@@ -43,16 +43,19 @@
         <div ref="palette-content" class="palette-content" :class="handleCanvasCursor">
             <canvas ref="canvas" />
         </div>
+
+        <error-tip-modal ref="errorTipModal" />
     </div>
 </template>
 
 <script>
+    import ErrorTipModal from "../shared/errorTipModal";
     let Mousetrap = require('mousetrap');
     import {Palette} from '../../libs/palette';
 
     export default {
         name: "draw-board",
-        components: {},
+        components: {ErrorTipModal},
         data() {
             return {
                 baseUrl: 'http://ow365.cn/?i=20191&n=5&furl=',
@@ -73,10 +76,14 @@
         },
         props: {
             studentId: Number,
-            url: String
+            url: String,
+            online: Boolean
         },
         watch: {},
         computed: {
+            baseMessage() {
+                return {sender: this.userId, receiver: this.studentId};
+            },
             handleCanvasCursor() {
                 let result = '';
                 switch (this.currHandle) {
@@ -121,19 +128,11 @@
             },
             back() {
                 this.myIframeWindow.postMessage("preAnim", '*');
-                let message = {
-                    sender: this.userId,
-                    receiver: this.studentId,
-                };
-                this.$stompClient.send('/back', JSON.stringify(message), {});
+                this.$stompClient.send('/back', JSON.stringify(this.baseMessage), {});
             },
             next() {
                 this.myIframeWindow.postMessage("nextAnim", '*');
-                let message = {
-                    sender: this.userId,
-                    receiver: this.studentId,
-                };
-                this.$stompClient.send('/next', JSON.stringify(message), {});
+                this.$stompClient.send('/next', JSON.stringify(this.baseMessage), {});
             },
             handlePaletteResize() {
                 let width = this.$refs['draw-board-container'].offsetWidth - 56;
@@ -217,11 +216,27 @@
                 this.$bus.on('on-getPaletteOffer', this.onGetPaletteOffer);
                 this.$bus.on('on-getPaletteAnswer', this.onGetPaletteAnswer);
                 this.$bus.on('on-getPaletteICE', this.onGetPaletteICE);
+                this.$bus.on('on-getStartClassResponse', this.onGetStartClassResponse);
             },
             handleOffWebSocketEvent() {
                 this.$bus.off('on-getPaletteOffer', this.onGetPaletteOffer);
                 this.$bus.off('on-getPaletteAnswer', this.onGetPaletteAnswer);
                 this.$bus.off('on-getPaletteICE', this.onGetPaletteICE);
+                this.$bus.off('on-getStartClassResponse', this.onGetStartClassResponse);
+            },
+            async onGetStartClassResponse() {
+                if (this.startClassFlag) {
+                    this.startClassFlag = false;
+                    this.endClass();
+                } else {
+                    if (this.peer === null) {
+                        await this.initPeer();
+                        await this.createDataChannel();
+                        this.onDataChannel();
+                    }
+                    await this.createPaletteOffer();
+                    this.startClassFlag = true;
+                }
             },
             async createPaletteOffer() { // 建立DataChannel，创建并发送 offer
                 try {
@@ -235,6 +250,14 @@
                 } catch (e) {
                     console.log('createOffer: ', e);
                 }
+            },
+            endClass() {
+                this.clearState();
+                this.$stompClient.send('/sendEndClass', JSON.stringify(this.baseMessage), {});
+            },
+            clearState() {
+                this.peer.close();
+                this.peer = null;
             },
             createDataChannel() { // 创建 DataChannel
                 try{
@@ -265,15 +288,18 @@
                 };
             },
             pptReupload() {
-                this.$emit('on-ppt-reupload')
+                if (!this.startClassFlag) {
+                    this.$emit('on-ppt-reupload')
+                } else {
+                    this.$refs.errorTipModal.show('请先结束当前课程');
+                }
             },
             startClass() {
-                if (this.startClassFlag) {
-                    this.startClassFlag = false;
-                } else {
-                    this.createPaletteOffer();
-                    this.startClassFlag = true;
-                }
+                // if (this.online) {
+                    this.$stompClient.send('/sendStartClassRequest', JSON.stringify(this.baseMessage), {});
+                // } else {
+                //     this.$refs.errorTipModal.show('学生不在线，无法开始上课');
+                // }
             }
         },
         mounted() {

@@ -31,7 +31,7 @@
             </div>
 
             <ppt-upload v-if="!pptUrl" @on-upload-success="handleUploadSuccess" />
-            <draw-board else ref="draw-board" v-if="studentId" :student-id="studentId" :url="pptUrl" @on-ppt-reupload="handlePptReupload"/>
+            <draw-board else ref="draw-board" v-if="studentId" :student-id="studentId" :url="pptUrl" :online="online" @on-ppt-reupload="handlePptReupload"/>
         </div>
 
         <error-tip-modal ref="errorTip"/>
@@ -78,6 +78,9 @@
         props: {},
         watch: {},
         computed: {
+            baseMessage() {
+                return {sender: this.userId, receiver: this.studentId};
+            },
             userId () {
                 return this.$store.state.user.userIdentity.id;
             },
@@ -226,12 +229,7 @@
             onGetStartRequest() {
                 this.initPeer();
                 this.online = true;
-                console.log(this.online);
-                let message = {
-                    sender: this.userId,
-                    receiver: this.studentId,
-                };
-                this.$stompClient.send('/sendStartResponse', JSON.stringify(message), {});
+                this.$stompClient.send('/sendStartResponse', JSON.stringify(this.baseMessage), {});
             },
             onGetStartResponse(data) {
                 this.createOffer();
@@ -276,11 +274,7 @@
                 });
             },
             sendStartRequest() {
-                let message = {
-                    sender: this.userId,
-                    receiver: this.studentId,
-                };
-                this.$stompClient.send('/sendStartRequest', JSON.stringify(message), {});
+                this.$stompClient.send('/sendStartRequest', JSON.stringify(this.baseMessage), {});
             },
             closeConnection() {
                 this.online = false;
@@ -302,11 +296,7 @@
         },
         beforeDestroy() {
             this.handleOffWebSocket();
-            let message = {
-                sender: this.userId,
-                receiver: this.studentId,
-            };
-            this.$stompClient.send('/sendCloseRequest', JSON.stringify(message), {});
+            this.$stompClient.send('/sendCloseRequest', JSON.stringify(this.baseMessage), {});
         },
         destroyed() {
             this.outlineType = 0;
