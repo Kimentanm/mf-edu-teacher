@@ -31,7 +31,12 @@
             </div>
 
             <ppt-upload v-if="!pptUrl" @on-upload-success="handleUploadSuccess" />
-            <draw-board else ref="draw-board" v-if="studentId" :student-id="studentId" :url="pptUrl" :online="online" @on-ppt-reupload="handlePptReupload"/>
+            <draw-board else ref="draw-board" v-if="studentId"
+                        :student-id="studentId"
+                        :url="pptUrl"
+                        :online="online"
+                        :iceServers="iceServers"
+                        @on-ppt-reupload="handlePptReupload"/>
         </div>
 
         <error-tip-modal ref="errorTip"/>
@@ -60,11 +65,12 @@
                 iceServers: {
                     iceServers: [
                         {
-                            "urls": [
-                                "turn:13.250.13.83:3478?transport=udp"
-                            ],
-                            "username": "YzYNCouZM1mhqhmseWk6",
-                            "credential": "YzYNCouZM1mhqhmseWk6"
+                            "urls": ["stun:111.231.135.83:3478"],
+                        },
+                        {
+                            "urls": ["turn:111.231.135.83:3478?transport=udp"],
+                            "username": "kimen",
+                            "credential": "123456"
                         }
                     ]
                 },

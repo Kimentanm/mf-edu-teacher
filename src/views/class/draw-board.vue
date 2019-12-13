@@ -77,7 +77,8 @@
         props: {
             studentId: Number,
             url: String,
-            online: Boolean
+            online: Boolean,
+            iceServers: Object
         },
         watch: {},
         computed: {
@@ -101,7 +102,7 @@
             initPeer() {
                 // 创建输出端 PeerConnection
                 let PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-                this.peer = new PeerConnection();
+                this.peer = new PeerConnection(this.iceServers);
                 // 监听ICE候选信息 如果收集到，就发送给对方
                 this.peer.onicecandidate = (event) => {
                     if (event.candidate) {
