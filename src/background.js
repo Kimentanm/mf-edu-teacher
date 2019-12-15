@@ -1,21 +1,26 @@
 'use strict'
 
-import {app, protocol, BrowserWindow} from 'electron'
+import {app, protocol, BrowserWindow, Menu} from 'electron'
 import {
   createProtocol,
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const env = process.env.NODE_ENV || 'development'
+const isDevelopment = env !== 'production'
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 // 如果进程出异常
 process.on('uncaughtException', function (err) {
   console.log(err)
-})
+});
 
-let win
+if (!isDevelopment) {
+  Menu.setApplicationMenu(null)
+}
+
+let win;
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
