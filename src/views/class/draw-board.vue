@@ -236,6 +236,7 @@
                         this.onDataChannel();
                     }
                     await this.createPaletteOffer();
+                    this.myIframeWindow.postMessage("goPage,0", '*');
                     this.startClassFlag = true;
                 }
             },
@@ -296,11 +297,11 @@
                 }
             },
             startClass() {
-                // if (this.online) {
+                if (this.online) {
                     this.$stompClient.send('/sendStartClassRequest', JSON.stringify(this.baseMessage), {});
-                // } else {
-                //     this.$refs.errorTipModal.show('学生不在线，无法开始上课');
-                // }
+                } else {
+                    this.$refs.errorTipModal.show('学生不在线，无法开始上课');
+                }
             }
         },
         mounted() {

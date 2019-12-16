@@ -160,9 +160,9 @@
                     let video = document.querySelector('#teacher');
                     video['disablePictureInPicture'] = true;
                     video.srcObject = this.localStream;
-                    this.initPeer(); // 获取到媒体流后，调用函数初始化 RTCPeerConnection
-                    this.sendStartRequest();
                 }
+                this.initPeer(); // 获取到媒体流后，调用函数初始化 RTCPeerConnection
+                this.sendStartRequest();
             },
             initPeer() {
                 // 创建输出端 PeerConnection
