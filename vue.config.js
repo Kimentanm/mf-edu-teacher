@@ -17,7 +17,7 @@ module.exports = {
     pluginOptions: {
         electronBuilder: {
             builderOptions: {
-                "appId": "com.mf.app",
+                "appId": "com.mf.app.teacher",
                 "productName":"梦飞在线一对一（教师端）",//项目名，也是生成的安装文件名，即aDemo.exe
                 "copyright":"Copyright © 2019",//版权信息
                 "directories":{

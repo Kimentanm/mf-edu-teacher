@@ -350,7 +350,7 @@
                     border-radius: 50%;
                     position: absolute;
                     top: 50%;
-                    right: 44px;
+                    right: 34px;
                     transform: translateY(-50%);
                 }
 
