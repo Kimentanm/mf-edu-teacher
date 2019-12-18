@@ -53,12 +53,19 @@ function createWindow() {
     win.loadURL('app://./index.html')
   }
 
+  win.on('close', () => {
+    exitApp();
+  });
+
   win.on('closed', () => {
     win = null
-  })
-
+  });
   //TODO 单开
 }
+
+function exitApp() {
+  win.webContents.send('onExitApp');
+};
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

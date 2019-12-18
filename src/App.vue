@@ -18,8 +18,22 @@
     }
   };
 
+  import { mapActions } from 'vuex'
+  let ipcRenderer = require('electron').ipcRenderer;
+
   export default {
     name: 'App',
+    methods: {
+      ...mapActions([
+        'handleLogOut'
+      ]),
+      handleOnExitApp() {
+        this.handleLogOut()
+      },
+    },
+    created() {
+      ipcRenderer.on('onExitApp', this.handleOnExitApp);
+    }
   }
 </script>
 
