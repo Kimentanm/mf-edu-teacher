@@ -18,7 +18,9 @@
             <Button style="margin-top: 10px" size="large" long type="info" @click="handleSubmit">登录</Button>
         </div>
 
-        <loading-modal :show="loginModal" title="正在登陆"></loading-modal>
+        <loading-modal :show="loginModal" title="正在登陆"/>
+
+        <p class="copyright">© 2019, MF Corporation Pvt. Ltd. All Rights Reserved.</p>
     </div>
 </template>
 
@@ -104,6 +106,16 @@
             &-card {
                 margin: 0 auto;
             }
+        }
+
+        .copyright {
+            position: absolute;
+            bottom: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            left: 50%;
+            transform: translateX(-50%);
         }
     }
 </style>

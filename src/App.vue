@@ -14,7 +14,7 @@
     const ev = window.event || e;
     const code = ev.keyCode || ev.which;
     if (code === 82 && (ev.metaKey || ev.ctrlKey)) {
-      return false;
+      // return false;
     }
   };
 

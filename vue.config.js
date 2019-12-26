@@ -23,6 +23,12 @@ module.exports = {
                 "directories":{
                     "output":"./dist"//输出文件路径
                 },
+                "publish": [
+                    {
+                        "provider": "generic",
+                        "url": "http://10.0.1.42:88/"
+                    }
+                ],
                 "win":{//win相关配置
                     "icon":"./mf-edu.ico",//图标，当前图标在根目录下，注意这里有两个坑
                     "target": [
