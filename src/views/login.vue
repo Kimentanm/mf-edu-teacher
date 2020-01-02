@@ -20,6 +20,10 @@
 
         <loading-modal :show="loginModal" title="正在登陆"/>
 
+        <progress-modal :show="progressModal" title="正在下载更新"
+                        :percent="percent"
+                        :transferred="transferred" :total="total"/>
+
         <p class="copyright">© 2019, MF Corporation Pvt. Ltd. All Rights Reserved.</p>
     </div>
 </template>
@@ -27,10 +31,13 @@
 <script>
     import LoadingModal from '@/views/shared/loadingModal.vue'
     import { mapActions } from 'vuex'
+    import ProgressModal from "./shared/progressModal";
+    let ipcRenderer = require('electron').ipcRenderer;
 
     export default {
         name: "login",
         components: {
+            ProgressModal,
             LoadingModal
         },
         data() {
@@ -48,7 +55,11 @@
                         {required: true, message: '密码不能为空', trigger: 'blur'}
                     ]
                 },
-                loginModal: false
+                loginModal: false,
+                progressModal: false,
+                percent: 0,
+                transferred: 0,
+                total: 0
             }
         },
         props: {},
@@ -78,9 +89,23 @@
                         })
                     }
                 });
+            },
+            handleStartDownload() {
+                this.progressModal = true;
+            },
+            handleSetProgressBar(event, state) {
+                this.percent = parseFloat((state.percent * 100).toFixed(2));
+                this.transferred = parseFloat((state.size.transferred / (1000 * 1000)).toFixed(2));
+                this.total = parseFloat((state.size.total / (1000 * 1000)).toFixed(2));
             }
         },
         created() {
+            ipcRenderer.on('startDownload', this.handleStartDownload);
+            ipcRenderer.on('setProgressBar', this.handleSetProgressBar);
+        },
+        beforeDestroy() {
+            ipcRenderer.removeListener('startDownload', this.handleStartDownload);
+            ipcRenderer.removeListener('setProgressBar', this.handleSetProgressBar);
         }
     }
 </script>

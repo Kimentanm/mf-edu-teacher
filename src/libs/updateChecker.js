@@ -4,7 +4,10 @@ import axios from 'axios'
 const release = 'https://api.github.com/repos/Molunerfinn/PicGo/releases/latest'
 const downloadUrl = 'https://github.com/Molunerfinn/PicGo/releases/latest'
 
-const checkVersion = async ( version ) => {
+let mainWindow;
+
+const checkVersion = async ( version, win ) => {
+    mainWindow = win;
     // const res = await axios.get(release)
     // if (res.status === 200) {
     //     const latest = res.data.name // 获取版本号
@@ -19,7 +22,7 @@ const checkVersion = async ( version ) => {
                 checkboxChecked: false
             }, (res, checkboxChecked) => {
                 if (res === 0) { // if selected yes
-
+                    hotUpdate();
                 }
             })
         // }
@@ -28,14 +31,21 @@ const checkVersion = async ( version ) => {
 const hotUpdate = () => {
     // Initiate the module
     EAU.init({
-        'api': 'http://...', // The API EAU will talk to
+        'api': 'http://localhost:8082/mf-edu/version/last?type=teacher', // The API EAU will talk to
         'server': false, // Where to check. true: server side, false: client side, default: true.
         'debug': false, // Default: false.
-        'body': {
-            name: packageInfo.name,
-            current: packageInfo.version
-        }, // Default: name and the current version
-        'formatRes': function(res) { return res } // 对返回的数据进行格式化操作的回调函数，保证EAU可以正常操作操作数据。比如格式化后返回：{version: xx, asar: xx}
+        // 'body': {
+        //     name: packageInfo.name,
+        //     current: packageInfo.version
+        // }, // Default: name and the current version
+        'formatRes': function(res) {
+            const data = res.data;
+            const result = {
+                version: 'v0.1.1',
+                asar: data.resUrl
+            }
+            return result;
+        } // 对返回的数据进行格式化操作的回调函数，保证EAU可以正常操作操作数据。比如格式化后返回：{version: xx, asar: xx}
     });
 
     EAU.check(function (error, last, body) {
@@ -45,11 +55,16 @@ const hotUpdate = () => {
             return false
         }
 
-        EAU.progress(function (state) {
+        mainWindow.webContents.send('startDownload');
 
+        EAU.progress(function (state) {
+            console.log(state);
+            mainWindow.webContents.send('setProgressBar', state);
+            mainWindow.setProgressBar(state.percent);
         });
 
         EAU.download(function (error) {
+            console.log(error);
             if (error) {
                 dialog.showErrorBox('info', error)
                 return false
