@@ -58,7 +58,7 @@
         components: {ErrorTipModal},
         data() {
             return {
-                baseUrl: 'http://ow365.cn/?i=20191&n=5&furl=',
+                baseUrl: 'http://ow365.cn/?i=20293&n=5&furl=',
                 myIframeWindow: {},
                 color: '#ed4014',
                 recommendColors: ['#2d8cf0', '#5cadff', '#2b85e4', '#2db7f5', '#19be6b', '#ff9900',

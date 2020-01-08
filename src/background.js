@@ -5,6 +5,7 @@ import {
   createProtocol,
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
+import checkVersion from "./libs/updateChecker"
 
 const env = process.env.NODE_ENV || 'development'
 const isDevelopment = env !== 'production'
@@ -100,9 +101,9 @@ app.on('ready', async () => {
     // } catch (e) {
     //   console.error('Vue Devtools failed to install:', e.toString())
     // }
-
   }
-  createWindow()
+  createWindow();
+  // checkVersion(app.getVersion(), win);
 })
 
 // Exit cleanly on request from parent process in development mode.
