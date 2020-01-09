@@ -4,12 +4,12 @@
             <Card class="login-con-card">
                 <Form ref="loginForm" :model="loginForm" :rules="loginFormRules">
                     <FormItem prop="userName">
-                        <Input v-model="loginForm.userName" placeholder="请输入账号" style="width: 200px">
+                        <Input v-model="loginForm.userName" placeholder="请输入账号" @on-enter="handleSubmit" style="width: 200px">
                             <Icon type="ios-contact" slot="prefix" />
                         </Input>
                     </FormItem>
                     <FormItem prop="password">
-                        <Input v-model="loginForm.password" type="password" password placeholder="请输入密码" style="width: 200px" >
+                        <Input v-model="loginForm.password" type="password" password @on-enter="handleSubmit" placeholder="请输入密码" style="width: 200px" >
                             <Icon type="ios-lock" slot="prefix" />
                         </Input>
                     </FormItem>
@@ -32,6 +32,7 @@
     import LoadingModal from '@/views/shared/loadingModal.vue'
     import { mapActions } from 'vuex'
     import ProgressModal from "./shared/progressModal";
+    let Mousetrap = require('mousetrap');
     let ipcRenderer = require('electron').ipcRenderer;
 
     export default {
@@ -100,6 +101,10 @@
             }
         },
         created() {
+            Mousetrap.bind(['enter'], () => {
+                this.handleSubmit();
+                return false;
+            });
             ipcRenderer.on('startDownload', this.handleStartDownload);
             ipcRenderer.on('setProgressBar', this.handleSetProgressBar);
         },

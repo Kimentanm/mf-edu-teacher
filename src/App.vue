@@ -38,6 +38,7 @@
 </script>
 
 <style lang="less">
+  @import "./assets/styles/common.less";
   .size{
     width: 100%;
     height: 100%;

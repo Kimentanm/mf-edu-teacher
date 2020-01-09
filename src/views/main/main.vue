@@ -1,15 +1,15 @@
 <template>
     <div class="main">
-        <Layout :style="{minHeight: '100vh'}">
+        <Layout style="minHeight: 100vh; height: 100%">
             <Header>
-                <header-bar></header-bar>
+                <header-bar/>
             </Header>
-            <Layout>
+            <Layout style="height: calc(100% - 64px)">
                 <Sider class="menu-slider" collapsible :collapsed-width="78" :width="140" v-model="isCollapsed">
                     <side-menu :menuList="menuList" :isCollapsed="isCollapsed"></side-menu>
                 </Sider>
                 <Layout class="main-layout">
-                    <Content :style="{padding: '0 16px 16px'}">
+                    <Content style="height: 100%">
                         <keep-alive>
                             <router-view/>
                         </keep-alive>
@@ -176,6 +176,8 @@
 <style lang="less">
     @import "../../assets/styles/common.less";
     .main {
+        height: 100%;
+
         .ivu-layout-header {
             padding: 0 16px;
         }
