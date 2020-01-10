@@ -229,7 +229,7 @@
         }
 
         .main-layout {
-            background-image: url('../../assets/images/main-layout-background.jpg');
+            background-image: url('../../assets/images/background.jpg');
             background-size: cover;
             background-position: center;
 

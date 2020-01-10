@@ -9,8 +9,22 @@
             <border-angle :width="50" :line-width="18" content-text="公有"/>
         </div>
         <img class="content" :style="{width: width - 2 + 'px'}" :src="imgSrc">
-        <div class="footer">
+        <div class="name">
             <p>初一数学</p>
+        </div>
+        <div class="tool">
+            <Row style="height: 100%">
+                <Col span="12" class="tool-item">
+                    <Tooltip class="tool-item-btn" content="预览" placement="top" theme="light" transfer>
+                        <Button @click="handleClick('line')" shape="circle" icon="md-eye" type="primary"/>
+                    </Tooltip>
+                </Col>
+                <Col span="12" class="tool-item">
+                    <Tooltip class="tool-item-btn" content="收藏" placement="top" theme="light" transfer>
+                        <Button @click="handleClick('collect')" shape="circle" icon="ios-heart" :type="data.collect ? 'error' : 'primary'"/>
+                    </Tooltip>
+                </Col>
+            </Row>
         </div>
     </Card>
 </template>
@@ -36,6 +50,15 @@
             }
         },
         methods: {
+            handleClick(type) {
+                switch (type) {
+                    case 'collect' : {
+                        this.$set(this.data, 'collect', !this.data.collect);
+                        break;
+                    }
+                    default:
+                }
+            },
             randomNum(minNum, maxNum) {
                 switch (arguments.length) {
                     case 1:
@@ -68,11 +91,28 @@
             cursor: pointer;
         }
 
-        .footer {
+        .name {
             padding: 5px 0;
 
             p {
                 text-align: center;
+            }
+        }
+
+        .tool {
+            height: 50px;
+            border-top: 1px solid #eee;
+
+            &-item{
+                position: relative;
+                height: 100%;
+
+                &-btn {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
             }
         }
     }

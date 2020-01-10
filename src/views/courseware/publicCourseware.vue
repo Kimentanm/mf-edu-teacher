@@ -1,7 +1,7 @@
 <template>
     <div class="public-courseware">
         <Row style="height: 100%;">
-            <Col class="height-100" span="12">
+            <Col v-show="!fullScreen" class="height-100 ppt-waterfall" :span="fullScreen ? 0 : 12">
                 <Waterfall
                         :list="list"
                         :gutter="10"
@@ -15,9 +15,12 @@
                 </Waterfall>
             </Col>
             <!--PPT预览-->
-            <Col class="height-100" span="12">
+            <Col class="height-100" :span="fullScreen ? 24 : 12" style="transition: all 0.3s ease-in-out 0s;position: absolute;right: 0">
                 <div class="ppt-preview">
-                    <Card class="height-100">
+                    <Card class="height-100" style="position: relative">
+                        <Tooltip class="tool-item-btn" content="全屏" placement="top" theme="light" transfer style="position: absolute;top: 88px;right: 15px">
+                            <Button @click="fullScreen = !fullScreen" shape="circle" icon="md-expand"/>
+                        </Tooltip>
                         <div slot="title">
                             <Avatar icon="ios-person" size="large" />
                             <div class="author-content">
@@ -30,9 +33,6 @@
                         <iframe id="my-iframe" :src="baseUrl + pptUrl" frameborder="0"></iframe>
                     </Card>
                 </div>
-<!--                <Card class="ppt-tools">-->
-
-<!--                </Card>-->
             </Col>
         </Row>
     </div>
@@ -68,7 +68,8 @@
                     {
                         name: 'test4.png'
                     },
-                ]
+                ],
+                fullScreen: false
             }
         },
         props: {},
@@ -77,7 +78,7 @@
         methods: {
             handleClick() {
 
-            }
+            },
         },
         mounted() {
             setTimeout(() => {
@@ -92,6 +93,14 @@
 <style lang="less">
     .public-courseware {
         height: 100%;
+
+        .ppt-waterfall {
+            overflow: auto;
+        }
+
+        .ppt-waterfall::-webkit-scrollbar {
+            width: 0;
+        }
 
         .author-content {
             display: inline-block;
@@ -108,10 +117,6 @@
                 font-size: 12px;
                 color: #c5c8ce;
             }
-        }
-
-        .grid {
-            margin: unset;
         }
 
         .ppt-preview {
@@ -132,12 +137,12 @@
             }
 
             .ivu-card-body {
-                height: 100%;
+                height: ~"calc(100% - 73px)";
                 padding: unset;
             }
 
             iframe {
-                height: ~"calc(100% - 73px)";
+                height: 100%;
                 width: 100%
                 /*display: inline-block;*/
                 /*width: ~"calc(100% - 40px)";*/
