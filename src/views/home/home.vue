@@ -67,12 +67,14 @@
                                 intro-text="我的学生"/>
                     </Col>
                     <Col span="6">
-                        <infor-card
-                                id-name="visit_count"
-                                :end-val="143"
-                                iconType="md-bookmarks"
-                                color="#64d572"
-                                intro-text="我的课件"/>
+                        <a @click="goToMyCourseware">
+                            <infor-card
+                                    id-name="visit_count"
+                                    :end-val="143"
+                                    iconType="md-bookmarks"
+                                    color="#64d572"
+                                    intro-text="我的课件"/>
+                        </a>
                     </Col>
                     <Col span="6">
                         <a @click="showClass">
@@ -265,6 +267,11 @@
                 this.$router.push({
                     name: 'class',
                     params: params
+                })
+            },
+            goToMyCourseware() {
+                this.$router.push({
+                    name: 'privateCourseware'
                 })
             },
             addNew() {

@@ -8,7 +8,7 @@
             </div>
             <border-angle :width="50" :line-width="18" content-text="公有"/>
         </div>
-        <img class="content" :style="{width: width - 2 + 'px'}" :src="imgSrc">
+        <img class="content width-100" :src="imgSrc">
         <div class="name">
             <p>初一数学</p>
         </div>
@@ -16,7 +16,7 @@
             <Row style="height: 100%">
                 <Col span="12" class="tool-item">
                     <Tooltip class="tool-item-btn" content="预览" placement="top" theme="light" transfer>
-                        <Button @click="handleClick('line')" shape="circle" icon="md-eye" type="primary"/>
+                        <Button @click="handleClick('preview')" shape="circle" icon="md-eye" type="primary"/>
                     </Tooltip>
                 </Col>
                 <Col span="12" class="tool-item">
@@ -56,6 +56,10 @@
                         this.$set(this.data, 'collect', !this.data.collect);
                         break;
                     }
+                    case 'preview' : {
+                        this.$emit('preview', this.data);
+                        break;
+                    }
                     default:
                 }
             },
@@ -71,13 +75,30 @@
             }
         },
         created() {
-            console.log(this.imgSrc);
         }
     }
 </script>
 
 <style lang="less">
     .courseware-card {
+
+        .author-content {
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 40px);
+            padding-left: 16px;
+
+            .name {
+                line-height: 16px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+            .time {
+                font-size: 12px;
+                color: #c5c8ce;
+            }
+        }
 
         .ivu-card-head {
             position: relative;
