@@ -1,18 +1,17 @@
 import { dialog, shell, app } from 'electron'
 const EAU = require('electron-asar-hot-updater');
 import axios from 'axios'
-const release = 'https://api.github.com/repos/Molunerfinn/PicGo/releases/latest'
-const downloadUrl = 'https://github.com/Molunerfinn/PicGo/releases/latest'
+import baseUrl from '../config/url';
 
 let mainWindow;
 
 const checkVersion = async ( version, win ) => {
     mainWindow = win;
-    // const res = await axios.get(release)
-    // if (res.status === 200) {
-    //     const latest = res.data.name // 获取版本号
-    //     const result = compareVersion2Update(version, latest) // 比对版本号，如果本地版本低于远端则更新
-    //     if (result) {
+    const res = await axios.post(baseUrl + "/version/last?type=TEACHER");
+    if (res.data.code === 200) {
+        const latest = res.data.data.versionNo; // 获取版本号
+        const result = compareVersion2Update(version, latest); // 比对版本号，如果本地版本低于远端则更新
+        if (result) {
             dialog.showMessageBox({
                 type: 'info',
                 title: '发现新版本',
@@ -25,40 +24,40 @@ const checkVersion = async ( version, win ) => {
                     hotUpdate();
                 }
             })
-        // }
+        }
+    }
 };
 
 const hotUpdate = () => {
     // Initiate the module
     EAU.init({
-        'api': 'http://localhost:8082/mf-edu/version/last?type=teacher', // The API EAU will talk to
+        'api': baseUrl + "/version/last?type=TEACHER", // The API EAU will talk to
+        'method': 'get',
         'server': false, // Where to check. true: server side, false: client side, default: true.
         'debug': false, // Default: false.
-        // 'body': {
-        //     name: packageInfo.name,
-        //     current: packageInfo.version
-        // }, // Default: name and the current version
         'formatRes': function(res) {
-            const data = res.data;
-            const result = {
-                version: 'v0.1.1',
-                asar: data.resUrl
+            console.log(res);
+            if (res.code === 200) {
+                const data = res.data;
+                return {
+                    version: data.versionNo,
+                    asar: data.resUrl,
+                    sha1:'423423423423'
+                };
             }
-            return result;
-        } // 对返回的数据进行格式化操作的回调函数，保证EAU可以正常操作操作数据。比如格式化后返回：{version: xx, asar: xx}
+        }
     });
 
     EAU.check(function (error, last, body) {
         if (error) {
             if (error === 'no_update_available') { return false; }
-            dialog.showErrorBox('info', error)
+            dialog.showErrorBox('info', error);
             return false
         }
 
         mainWindow.webContents.send('startDownload');
 
         EAU.progress(function (state) {
-            console.log(state);
             mainWindow.webContents.send('setProgressBar', state);
             mainWindow.setProgressBar(state.percent);
         });
@@ -66,15 +65,30 @@ const hotUpdate = () => {
         EAU.download(function (error) {
             console.log(error);
             if (error) {
+                if (error === 'failed_to_download_update') {
+                    dialog.showMessageBox(
+                        {
+                            type: 'error',
+                            title: '发生错误',
+                            message: "下载更新文件失败，请重新启动客户端！",
+                            buttons: ['重启', '取消']
+                        }, (res, checkboxChecked) => {
+                            if (res === 0) {
+                                app.relaunch();
+                                app.quit();
+                            }
+                        });
+                    return false;
+                }
                 dialog.showErrorBox('info', error)
-                return false
+                return false;
             }
             // dialog.showErrorBox('info', 'App updated successfully! Restart it please.')
             if (process.platform === 'darwin') {
-                app.relaunch()
                 app.quit()
             } else {
-                app.quit()
+                app.relaunch();
+                app.quit();
             }
         })
     });
