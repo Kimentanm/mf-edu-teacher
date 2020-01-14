@@ -55,7 +55,7 @@
                 pptPreviewModal: false,
                 fullScreen: false,
                 baseUrl: 'http://ow365.cn/?i=20293&n=5&furl=',
-                pptUrl: 'http://img.kimen.com.cn/桃花模板.pptx',
+                pptUrl: '',
             }
         },
         props: {
@@ -90,6 +90,7 @@
         },
         created() {
             this.pptPreviewModal = this.show;
+            this.pptUrl = this.curPreview.url;
         }
     }
 </script>

@@ -3,8 +3,8 @@
         <Row>
             <Col span="24" style="padding: 10px 60px">
                 <el-carousel :interval="4000" type="card">
-                    <el-carousel-item v-for="(item, index) in list.slice(1, 5)" :key="index">
-                        <img class="height-100 width-100" :src="imgSrc(item.name)" />
+                    <el-carousel-item v-for="(item, index) in list.slice(0, 5)" :key="index">
+                        <img class="height-100 width-100" :src="item.coverImg" />
                     </el-carousel-item>
                 </el-carousel>
             </Col>
@@ -32,6 +32,7 @@
     import CoursewareCard from './components/coursewareCard';
     import Waterfall from "vue-waterfall-plugin";
     import CoursewarePreview from "./components/coursewarePreview";
+    import { getAllPublicCourseware } from "@/api/courseware.js"
 
     export default {
         name: "public-courseware",
@@ -43,128 +44,7 @@
         data() {
             return {
                 width: 300,
-                list: [
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                    {
-                        name: 'test1.png'
-                    },
-                    {
-                        name: 'test2.png'
-                    },
-                    {
-                        name: 'test3.png'
-                    },
-                    {
-                        name: 'test4.png'
-                    },
-                ],
+                list: [],
                 curPreview: {},
                 pptPreviewModal: false
             }
@@ -173,20 +53,24 @@
         watch: {},
         computed: {},
         methods: {
-            imgSrc(name) {
-                return require('../../assets/test/' + name);
-            },
             handlePptPreview(curPreview) {
                 this.curPreview = curPreview;
                 this.pptPreviewModal = true;
-            }
+            },
+            getAllPublicCourseware() {
+                getAllPublicCourseware().then(res => {
+                    if (res.code === 200) {
+                        this.list = res.data;
+                        this.$refs.waterfall.calculatePosition();
+                    }
+                })
+            },
         },
         mounted() {
-            setTimeout(() => {
-                this.$refs.waterfall.calculatePosition();
-            }, 100)
+            this.getAllPublicCourseware();
         },
         created() {
+
         }
     }
 </script>

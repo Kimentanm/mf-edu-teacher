@@ -1,14 +1,14 @@
 <template>
     <Card class="courseware-card">
         <div slot="title">
-            <Avatar icon="ios-person" size="large"/>
+            <Avatar icon="ios-person" size="large" :src="data.createUser.imageUrl"/>
             <div class="author-content">
-                <p class="name">Kimen</p>
-                <p class="time">于2020年01月01日分享</p>
+                <p class="name">{{data.createUser.name}}</p>
+                <p class="time">于{{DateUtil.formatDate(new Date(data.createUser.createdDate), 'yyyy年MM月dd日')}}分享</p>
             </div>
             <border-angle :width="50" :line-width="18" content-text="公有"/>
         </div>
-        <img class="content width-100" :src="imgSrc">
+        <img class="content width-100" :src="data.coverImg">
         <div class="name">
             <p>初一数学</p>
         </div>
@@ -31,11 +31,15 @@
 
 <script>
     import BorderAngle from "../../shared/borderAngle";
+    import DateUtil from "../../../libs/DateUtil";
+
     export default {
         name: "courseware-card",
         components: { BorderAngle },
         data() {
-            return {}
+            return {
+                DateUtil
+            }
         },
         props: {
             data: Object,
@@ -43,11 +47,6 @@
         },
         watch: {},
         computed: {
-            imgSrc() {
-                if (this.data) {
-                    return require('../../../assets/test/' + this.data.name);
-                }
-            }
         },
         methods: {
             handleClick(type) {
@@ -75,6 +74,7 @@
             }
         },
         created() {
+            console.log(this.data);
         }
     }
 </script>
