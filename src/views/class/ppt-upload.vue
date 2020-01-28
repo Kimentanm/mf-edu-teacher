@@ -41,7 +41,7 @@
         methods: {
             handleUploadSuccess(response, file, fileList) {
                 this.uploadLoading = false;
-                this.$emit('on-upload-success', response.data.location)
+                this.$emit('on-upload-success', response.data[0].location)
             },
             handleUploadError(error, file, fileList) {
                 this.$refs.errorTip.show("PPT上传失败，请重试");
