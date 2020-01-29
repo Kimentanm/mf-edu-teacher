@@ -38,7 +38,12 @@ module.exports = {
                         }
                     ]
                 },
-
+                "mac": {
+                    "extendInfo": {
+                        "NSMicrophoneUsageDescription": "请允许本程序访问您的麦克风",
+                        "NSCameraUsageDescription": "请允许本程序访问您的摄像头"
+                    }
+                },
                 "win":{//win相关配置
                     "icon":"./mf-edu.ico",//图标，当前图标在根目录下，注意这里有两个坑
                     "target": [
