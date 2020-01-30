@@ -32,10 +32,13 @@
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
-                <Tooltip class="reupload-ppt" content="重新上传PPT" placement="left" :offset="-4" theme="light">
+                <Tooltip style="bottom: 90px" class="horizontal" :content="palettePermission ? '取消授权' : '画板授权'" placement="left" :offset="-4" theme="light">
+                    <Button @click="controlStudentPalette" type="warning" shape="circle" icon="ios-bulb" />
+                </Tooltip>
+                <Tooltip style="bottom: 50px" class="horizontal" content="重新上传PPT" placement="left" :offset="-4" theme="light">
                     <Button @click="pptReupload" type="primary" shape="circle" icon="md-refresh" />
                 </Tooltip>
-                <Tooltip class="start-class" :content="startClassFlag ? '暂停上课' : '开始上课'" placement="left" :offset="-4" theme="light">
+                <Tooltip style="bottom: 10px" class="horizontal" :content="startClassFlag ? '暂停上课' : '开始上课'" placement="left" :offset="-4" theme="light">
                     <Button @click="startClass" type="error" shape="circle" :icon="startClassFlag ? 'md-pause' : 'md-play'" />
                 </Tooltip>
             </div>
@@ -71,7 +74,8 @@
                 peer: null,
                 channel: null,
                 startClassFlag: false,
-                lastEvent: ''
+                lastEvent: '',
+                palettePermission: false
             }
         },
         props: {
@@ -99,6 +103,12 @@
             },
         },
         methods: {
+            controlStudentPalette() {
+                this.palettePermission = !this.palettePermission;
+                let data = JSON.parse(JSON.stringify(this.baseMessage));
+                data.content = this.palettePermission;
+                this.$stompClient.send('/controlStudentPalette', JSON.stringify(data), {});
+            },
             initPeer() {
                 // 创建输出端 PeerConnection
                 let PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
@@ -218,12 +228,18 @@
                 this.$bus.on('on-getPaletteAnswer', this.onGetPaletteAnswer);
                 this.$bus.on('on-getPaletteICE', this.onGetPaletteICE);
                 this.$bus.on('on-getStartClassResponse', this.onGetStartClassResponse);
+                this.$bus.on('on-getCloseRequest', this.closeConnection);
             },
             handleOffWebSocketEvent() {
                 this.$bus.off('on-getPaletteOffer', this.onGetPaletteOffer);
                 this.$bus.off('on-getPaletteAnswer', this.onGetPaletteAnswer);
                 this.$bus.off('on-getPaletteICE', this.onGetPaletteICE);
                 this.$bus.off('on-getStartClassResponse', this.onGetStartClassResponse);
+                this.$bus.off('on-getCloseRequest', this.closeConnection);
+            },
+            closeConnection() {
+                this.startClassFlag  = false;
+                this.endClass();
             },
             async onGetStartClassResponse() {
                 if (this.startClassFlag) {
@@ -264,6 +280,7 @@
             createDataChannel() { // 创建 DataChannel
                 try{
                     this.channel = this.peer.createDataChannel('messagechannel');
+                    this.handleChannel(this.channel);
                 } catch (e) {
                     console.log('createDataChannel:', e);
                 }
@@ -278,15 +295,33 @@
                 channel.binaryType = 'arraybuffer';
                 channel.onopen = (event) => { // 连接成功
                     console.log('channel onopen', event);
-                    this.loading = false;
                 };
                 channel.onclose = function(event) { // 连接关闭
                     console.log('channel onclose', event)
                 };
                 channel.onmessage = (e) => { // 收到消息
-                    console.log(e);
-                    let [type, ...arr] = JSON.parse(e.data);
-                    this.palette[type](...arr);
+                    const data = JSON.parse(e.data);
+                    const teacherWidth = data.width;
+                    const teacherHeight = data.height;
+                    const width = this.$refs['canvas'].width;
+                    const height = this.$refs['canvas'].height;
+                    let [type, ...arr] = data.arr;
+                    let temp = [...arr];
+                    if (type === 'eraser') {
+                        temp[0] = temp[0] * width / teacherWidth;
+                        temp[1] = temp[1] * height / teacherHeight;
+                        temp[2] = this.$refs['canvas'].width;
+                        temp[3] = this.$refs['canvas'].height;
+                    }
+                    if (temp[1] && type !== 'eraser') {
+                        temp[0][0] = temp[0][0] * width / teacherWidth;
+                        temp[0][1] = temp[0][1] * height / teacherHeight;
+                        temp[1][0] = temp[1][0] * width / teacherWidth;
+                        temp[1][1] = temp[1][1] * height / teacherHeight;
+                        temp[2] = temp[2] * width / teacherWidth
+                    }
+                    let [...args] = temp;
+                    this.palette[type](...args);
                 };
             },
             pptReupload() {
@@ -297,19 +332,17 @@
                 }
             },
             startClass() {
-                if (this.online) {
+                // if (this.online) {
                     this.$stompClient.send('/sendStartClassRequest', JSON.stringify(this.baseMessage), {});
-                } else {
-                    this.$refs.errorTipModal.show('学生不在线，无法开始上课');
-                }
+                // } else {
+                //     this.$refs.errorTipModal.show('学生不在线，无法开始上课');
+                // }
             }
         },
         mounted() {
             this.myIframeWindow = document.getElementById('my-iframe').contentWindow;
             this.handleOnWebSocketEvent();
-            window.addEventListener('resize', () => {
-                this.handlePaletteResize()
-            });
+            window.addEventListener('resize', this.handlePaletteResize());
             this.$nextTick(async () => {
                 this.handlePaletteResize();
                 this.initPalette();
@@ -330,9 +363,7 @@
         },
         beforeDestroy() {
             this.handleOffWebSocketEvent();
-            window.removeEventListener('resize', () => {
-                this.handlePaletteResize()
-            });
+            window.removeEventListener('resize', this.handlePaletteResize());
         }
     }
 </script>
@@ -362,7 +393,7 @@
         }
 
         .cursor-pen {
-            cursor: url("../../assets/images/test2.ico") 0 30, auto;
+            cursor: url("../../assets/images/palette-pen.ico") 0 30, auto;
         }
 
         .cursor-eraser {
@@ -393,16 +424,8 @@
                 /*    transform: translateX(-50%)*/
                 /*}*/
 
-                .reupload-ppt {
+                .horizontal {
                     position: absolute;
-                    bottom: 50px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                }
-
-                .start-class {
-                    position: absolute;
-                    bottom: 10px;
                     left: 50%;
                     transform: translateX(-50%);
                 }
