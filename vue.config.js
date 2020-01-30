@@ -39,6 +39,7 @@ module.exports = {
                     ]
                 },
                 "mac": {
+                    "icon":"./mf-edu.icns",
                     "extendInfo": {
                         "NSMicrophoneUsageDescription": "请允许本程序访问您的麦克风",
                         "NSCameraUsageDescription": "请允许本程序访问您的摄像头"
