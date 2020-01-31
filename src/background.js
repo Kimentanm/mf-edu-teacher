@@ -103,7 +103,7 @@ app.on('ready', async () => {
     // }
   }
   createWindow();
-  checkVersion(app.getVersion(), win);
+  checkVersion("v0.1.1", win);
 })
 
 // Exit cleanly on request from parent process in development mode.
