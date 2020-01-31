@@ -16,9 +16,8 @@ const checkVersion = async ( version, win ) => {
                 type: 'info',
                 title: '发现新版本',
                 buttons: ['Yes', 'No'],
-                message: '发现新版本' + version + '，更新了很多功能，是否去下载最新的版本？',
-                checkboxChecked: false
-            }, (res, checkboxChecked) => {
+                message: '发现新版本' + latest + '，更新了很多功能，是否去下载最新的版本？',
+            }, (res) => {
                 if (res === 0) { // if selected yes
                     hotUpdate();
                 }
@@ -59,7 +58,6 @@ const hotUpdate = () => {
         });
 
         EAU.download(function (error) {
-            console.log(error);
             if (error) {
                 if (error === 'failed_to_download_update') {
                     dialog.showMessageBox(
@@ -88,6 +86,8 @@ const hotUpdate = () => {
                 if (res === 0) { // if selected yes
                     app.relaunch();
                     app.quit();
+                } else {
+                    mainWindow.webContents.send('endDownload');
                 }
             });
         })

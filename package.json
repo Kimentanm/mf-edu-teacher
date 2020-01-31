@@ -1,7 +1,7 @@
 {
   "name": "mf-edu-teacher",
   "author": "mf",
-  "version": "v0.1.0",
+  "version": "v0.1.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

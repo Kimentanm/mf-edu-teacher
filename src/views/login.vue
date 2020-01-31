@@ -94,6 +94,9 @@
             handleStartDownload() {
                 this.progressModal = true;
             },
+            handleEndDownload() {
+                this.progressModal = false;
+            },
             handleSetProgressBar(event, state) {
                 this.percent = parseFloat((state.percent * 100).toFixed(2));
                 this.transferred = parseFloat((state.size.transferred / (1000 * 1000)).toFixed(2));
@@ -105,10 +108,12 @@
                 this.handleSubmit();
                 return false;
             });
+            ipcRenderer.on('endDownload', this.handleEndDownload);
             ipcRenderer.on('startDownload', this.handleStartDownload);
             ipcRenderer.on('setProgressBar', this.handleSetProgressBar);
         },
         beforeDestroy() {
+            ipcRenderer.removeListener('endDownload', this.handleEndDownload);
             ipcRenderer.removeListener('startDownload', this.handleStartDownload);
             ipcRenderer.removeListener('setProgressBar', this.handleSetProgressBar);
         }

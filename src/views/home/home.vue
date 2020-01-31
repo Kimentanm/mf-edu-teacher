@@ -270,9 +270,9 @@
                 })
             },
             goToMyCourseware() {
-                this.$router.push({
-                    name: 'privateCourseware'
-                })
+                // this.$router.push({
+                //     name: 'privateCourseware'
+                // })
             },
             addNew() {
                 // let self = this;
