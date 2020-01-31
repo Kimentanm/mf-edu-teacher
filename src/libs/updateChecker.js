@@ -17,7 +17,6 @@ const checkVersion = async ( version, win ) => {
                 title: '发现新版本',
                 buttons: ['Yes', 'No'],
                 message: '发现新版本' + version + '，更新了很多功能，是否去下载最新的版本？',
-                checkboxLabel: '以后不再提醒',
                 checkboxChecked: false
             }, (res, checkboxChecked) => {
                 if (res === 0) { // if selected yes
@@ -32,17 +31,14 @@ const hotUpdate = () => {
     // Initiate the module
     EAU.init({
         'api': baseUrl + "/version/last?type=TEACHER", // The API EAU will talk to
-        'method': 'get',
         'server': false, // Where to check. true: server side, false: client side, default: true.
         'debug': false, // Default: false.
         'formatRes': function(res) {
-            console.log(res);
             if (res.code === 200) {
                 const data = res.data;
                 return {
                     version: data.versionNo,
                     asar: data.resUrl,
-                    sha1:'423423423423'
                 };
             }
         }
@@ -72,7 +68,7 @@ const hotUpdate = () => {
                             title: '发生错误',
                             message: "下载更新文件失败，请重新启动客户端！",
                             buttons: ['重启', '取消']
-                        }, (res, checkboxChecked) => {
+                        }, (res) => {
                             if (res === 0) {
                                 app.relaunch();
                                 app.quit();
@@ -83,13 +79,17 @@ const hotUpdate = () => {
                 dialog.showErrorBox('info', error)
                 return false;
             }
-            // dialog.showErrorBox('info', 'App updated successfully! Restart it please.')
-            if (process.platform === 'darwin') {
-                app.quit()
-            } else {
-                app.relaunch();
-                app.quit();
-            }
+            dialog.showMessageBox({
+                type: 'info',
+                title: '应用更新成功',
+                buttons: ['立即重启', '稍后重启'],
+                message: '应用更新成功，请立即重启当前应用',
+            }, (res) => {
+                if (res === 0) { // if selected yes
+                    app.relaunch();
+                    app.quit();
+                }
+            });
         })
     });
 }
