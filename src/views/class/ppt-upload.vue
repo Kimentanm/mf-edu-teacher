@@ -11,7 +11,7 @@
             :on-exceeded-size="handleExceededSize"
             :on-success="handleUploadSuccess">
         <div class="ppt-upload-tag">
-            <img src="http://img.kimen.com.cn/PPT.png">
+            <img src="../../assets/images/ppt-icon.png">
             <p>点击或拖拽上传PPT</p>
         </div>
 
