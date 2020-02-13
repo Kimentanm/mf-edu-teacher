@@ -3,9 +3,13 @@ const EAU = require('electron-asar-hot-updater');
 import axios from 'axios'
 import baseUrl from '../config/url';
 
+// 注意这个autoUpdater不是electron中的autoUpdater
+import {autoUpdater} from "electron-updater"
+
 let mainWindow;
 
-const checkVersion = async ( version, win ) => {
+const checkVersion = async ( win ) => {
+    let version = app.getVersion();
     mainWindow = win;
     const res = await axios.post(baseUrl + "/version/last?type=TEACHER");
     if (res.data.code === 200) {
@@ -19,12 +23,69 @@ const checkVersion = async ( version, win ) => {
                 message: '发现新版本' + latest + '，更新了很多功能，是否去下载最新的版本？',
             }, (res) => {
                 if (res === 0) { // if selected yes
-                    hotUpdate();
+                    handleUpdate();
                 }
             })
         }
     }
 };
+
+function handleUpdate() {
+    //和之前package.json配置的一样
+    autoUpdater.setFeedURL('http://www.kimen.com.cn/download/');
+
+    //更新错误
+    autoUpdater.on('error', function (error) {
+        console.log('error');
+    });
+
+    //检查中
+    autoUpdater.on('checking-for-update', function () {
+        console.log('checking-for-update');
+    });
+
+    //发现新版本
+    autoUpdater.on('update-available', function (info) {
+        mainWindow.webContents.send('startDownload');
+    });
+
+    //当前版本为最新版本
+    autoUpdater.on('update-not-available', function (info) {
+        console.log('update-not-available');
+    });
+
+    // 更新下载进度事件
+    autoUpdater.on('download-progress', function (progressObj) {
+        console.log(JSON.stringify(progressObj));
+        mainWindow.webContents.send('setProgressBar', progressObj);
+        mainWindow.setProgressBar(progressObj.percent);
+    });
+
+
+    autoUpdater.on('update-downloaded', function (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {
+        console.log('update-downloaded');
+        dialog.showMessageBox({
+            type: 'info',
+            title: '应用更新成功',
+            buttons: ['立即重启', '稍后重启'],
+            message: '应用更新成功，请立即重启当前应用',
+        }, (res) => {
+            if (res === 0) { // if selected yes
+                autoUpdater.quitAndInstall();
+            } else {
+                mainWindow.webContents.send('endDownload');
+            }
+        });
+        // ipcMain.on('isUpdateNow', (e, arg) => {
+        //     //some code here to handle event
+        //
+        // });
+        // // win.webContents.send('isUpdateNow')
+    });
+
+    //执行自动更新检查
+    autoUpdater.checkForUpdates();
+}
 
 const hotUpdate = () => {
     // Initiate the module

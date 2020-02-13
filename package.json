@@ -1,7 +1,7 @@
 {
   "name": "mf-edu-teacher",
   "author": "mf",
-  "version": "v0.1.1",
+  "version": "v0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -20,6 +20,7 @@
     "countup": "^1.8.2",
     "echarts": "^4.4.0",
     "electron-asar-hot-updater": "^0.1.2",
+    "electron-updater": "^4.2.0",
     "element-ui": "^2.13.0",
     "js-cookie": "^2.2.1",
     "less": "^3.10.3",

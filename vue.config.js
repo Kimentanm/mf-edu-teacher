@@ -19,7 +19,7 @@ module.exports = {
             builderOptions: {
                 "appId": "com.mf.app.teacher",
                 "productName":"梦飞在线一对一（教师端）",//项目名，也是生成的安装文件名，即aDemo.exe
-                "copyright":"Copyright © 2019",//版权信息
+                "copyright":"Copyright © 2020",//版权信息
                 "directories":{
                     "output":"./dist"//输出文件路径
                 },
@@ -67,6 +67,12 @@ module.exports = {
                     "createStartMenuShortcut": true,// 创建开始菜单图标
                     "shortcutName": "梦飞在线一对一（教师端）", // 图标名称
                 },
+                "publish": [
+                    {
+                        "provider": "generic",
+                        "url": "http://www.kimen.com.cn/download/",//更新服务器地址,可为空
+                    }
+                ],
             }
         }
 

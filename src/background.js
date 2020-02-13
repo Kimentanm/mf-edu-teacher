@@ -1,6 +1,6 @@
 'use strict'
 
-import {app, protocol, BrowserWindow, Menu} from 'electron'
+import {app, protocol, BrowserWindow, Menu, ipcMain} from 'electron'
 import {
   createProtocol,
   installVueDevtools
@@ -102,9 +102,11 @@ app.on('ready', async () => {
     //   console.error('Vue Devtools failed to install:', e.toString())
     // }
   }
-  createWindow();
-  checkVersion("v0.1.1", win);
-})
+  ipcMain.on('appMounted', () => {
+    checkVersion(win);
+  });
+  await createWindow();
+});
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
