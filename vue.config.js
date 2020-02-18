@@ -70,7 +70,7 @@ module.exports = {
                 "publish": [
                     {
                         "provider": "generic",
-                        "url": "http://www.kimen.com.cn/download/",//更新服务器地址,可为空
+                        "url": "http://www.kimen.com.cn/download/mf-teacher",//更新服务器地址,可为空
                     }
                 ],
             }
