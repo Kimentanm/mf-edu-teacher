@@ -3,7 +3,7 @@
             class="ppt-upload"
             type="drag"
             :max-size="5 * 1024"
-            accept="application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            accept="application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/pdf"
             :action="baseUrl + '/common/file/upload'"
             :on-error="handleUploadError"
             :on-format-error="handleFileFormatError"
@@ -32,7 +32,8 @@
         data() {
             return {
                 baseUrl,
-                uploadLoading: false
+                uploadLoading: false,
+                contentTypes: ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']
             }
         },
         props: {},
@@ -52,8 +53,8 @@
                 this.uploadLoading = false;
             },
             handleBeforeUpload(file) {
-                if (file.type !== 'application/vnd.ms-powerpoint' && file.type !== 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
-                    this.$refs.errorTip.show("请上传PPT文件");
+                if (this.contentTypes.indexOf(file.type) === -1) {
+                    this.$refs.errorTip.show("请上传PPT或PDF文件");
                     return false;
                 }
                 this.uploadLoading = true;
