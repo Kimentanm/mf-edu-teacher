@@ -29,14 +29,20 @@
                     <video id="student" autoplay/>
                 </div>
             </div>
+            <div class="class-container">
+                <ppt-upload ref="ppt-upload" v-show="!pptUrl" @on-upload-success="handleUploadSuccess" />
+                <draw-board v-for="(item, index) in classCourseware[this.classroomId]" :key="index" ref="draw-board" v-show="pptUrl && pptUrl === item && studentId"
+                            :student-id="studentId"
+                            :url="pptUrl"
+                            :online="online"
+                            :iceServers="iceServers"
+                            @on-ppt-reupload="handlePptReupload"
+                            @on-show-courseware="handleShowCoursewareList"/>
+                <transition name="fade">
+                    <courseware-list v-show="coursewareListShow" ref="courseware-list" :classroomId="classroomId" @click-item="handleClickItem"/>
+                </transition>
+            </div>
 
-            <ppt-upload v-if="!pptUrl" @on-upload-success="handleUploadSuccess" />
-            <draw-board else ref="draw-board" v-if="studentId"
-                        :student-id="studentId"
-                        :url="pptUrl"
-                        :online="online"
-                        :iceServers="iceServers"
-                        @on-ppt-reupload="handlePptReupload"/>
         </div>
 
         <error-tip-modal ref="errorTip"/>
@@ -49,10 +55,12 @@
     import { getClassInfo } from "@/api/class";
     import HeaderBar from '../main/components/header-bar'
     import PptUpload from "./ppt-upload";
+    import CoursewareList from "./components/courseware-list";
+    import {mapState} from 'vuex';
 
     export default {
         name: "class",
-        components: {PptUpload, DrawBoard, ErrorTipModal, HeaderBar},
+        components: {CoursewareList, PptUpload, DrawBoard, ErrorTipModal, HeaderBar},
         data() {
             return {
                 localStream: undefined,
@@ -79,12 +87,16 @@
                 myVideoTip: '',
                 online: false,
                 outlineType: 0,
-                pptUrl: ''
+                pptUrl: '',
+                coursewareListShow: true
             }
         },
         props: {},
         watch: {},
         computed: {
+            ...mapState({
+                classCourseware: state => state.app.classCourseware
+            }),
             baseMessage() {
                 return {sender: this.userId, receiver: this.studentId};
             },
@@ -105,11 +117,25 @@
             }
         },
         methods: {
+            handleClickItem(url) {
+                this.pptUrl = url;
+                if (!url) {
+                    this.$refs['ppt-upload'].startUpload();
+                }
+            },
             handlePptReupload() {
                 this.pptUrl = '';
             },
+            handleShowCoursewareList() {
+                this.coursewareListShow = !this.coursewareListShow;
+            },
             handleUploadSuccess(pptUrl) {
                 this.pptUrl = pptUrl;
+                if (!this.classCourseware[this.classroomId]) {
+                    this.classCourseware[this.classroomId] = [];
+                }
+                this.classCourseware[this.classroomId].push(pptUrl);
+                this.$refs['courseware-list'].refreshList();
             },
             goToHome() {
                 this.$destroy();
@@ -308,6 +334,7 @@
         },
         destroyed() {
             this.outlineType = 0;
+            this.localStream.getTracks()[0].stop();
             this.localStream = null;
             this.closeConnection();
         }
@@ -412,6 +439,15 @@
                     height: 180px;
                     background-color: #000;
                 }
+            }
+
+            .class-container {
+                width: ~"calc(100% - 240px)";
+                height: 100%;
+                display: inline-block;
+                vertical-align: top;
+                padding-left: 16px;
+                position: relative;
             }
         }
     }

@@ -1,49 +1,60 @@
 <template>
     <div ref="draw-board-container" class="draw-board-container" style="position: relative">
-        <iframe id="my-iframe" :src="baseUrl + url" frameborder="0"></iframe>
+        <div class="draw-board-container-main">
+            <vue-video ref="courseware-video" class="courseware-video" v-if="isVideo" :src="url"/>
+            <iframe v-else id="my-iframe" :src="baseUrl + url" frameborder="0"></iframe>
+        </div>
         <div class="draw-board-toolbar">
             <div class="draw-board-toolbar-content">
                 <div style="text-align: center">
-                    <Tooltip content="画笔" placement="left" :offset="-4" theme="light">
-                        <Button @click="handleClick('line')" style="margin-bottom: 10px" shape="circle" icon="ios-brush"></Button>
-                    </Tooltip>
-                    <Poptip placement="left" width="20" popper-class="toolbar-line-width">
-                        <Tooltip content="线宽" placement="left" :offset="-4" theme="light">
-                            <Button style="margin-bottom: 10px" shape="circle" icon="md-resize"></Button>
+                    <div v-if="!isVideo">
+                        <Tooltip content="画笔" placement="left" :offset="-4" theme="light">
+                            <Button @click="handleClick('line')" style="margin-bottom: 10px" shape="circle" icon="ios-brush"></Button>
                         </Tooltip>
-                        <el-slider @change="lineWidthChange" slot="content" v-model="lineWidth" :max="20" vertical height="120px"></el-slider>
-                    </Poptip>
-                    <Tooltip content="上一步" placement="left" :offset="-4" theme="light">
-                        <Button @click="handleClick('cancel')" style="margin-bottom: 10px" shape="circle" icon="ios-redo"></Button>
-                    </Tooltip>
-                    <Tooltip content="橡皮擦" placement="left" :offset="-4" theme="light">
-                        <Button @click="handleClick('eraser')" style="margin-bottom: 10px" shape="circle" icon="ios-pint"></Button>
-                    </Tooltip>
-                    <Tooltip content="清屏" placement="left" :offset="-4" theme="light">
-                        <Button @click="handleClick('clear')" style="margin-bottom: 10px" shape="circle" icon="md-trash"></Button>
-                    </Tooltip>
-                    <Tooltip content="颜色" placement="left" :offset="-4" theme="light">
-                        <ColorPicker class="toolbar-color" @on-change="colorChange" v-model="color" alpha :colors="recommendColors"></ColorPicker>
-                    </Tooltip>
+                        <Poptip placement="left" width="20" popper-class="toolbar-line-width">
+                            <Tooltip content="线宽" placement="left" :offset="-4" theme="light">
+                                <Button style="margin-bottom: 10px" shape="circle" icon="md-resize"></Button>
+                            </Tooltip>
+                            <el-slider @change="lineWidthChange" slot="content" v-model="lineWidth" :max="20" vertical height="120px"></el-slider>
+                        </Poptip>
+                        <Tooltip content="上一步" placement="left" :offset="-4" theme="light">
+                            <Button @click="handleClick('cancel')" style="margin-bottom: 10px" shape="circle" icon="ios-redo"></Button>
+                        </Tooltip>
+                        <Tooltip content="橡皮擦" placement="left" :offset="-4" theme="light">
+                            <Button @click="handleClick('eraser')" style="margin-bottom: 10px" shape="circle" icon="ios-pint"></Button>
+                        </Tooltip>
+                        <Tooltip content="清屏" placement="left" :offset="-4" theme="light">
+                            <Button @click="handleClick('clear')" style="margin-bottom: 10px" shape="circle" icon="md-trash"></Button>
+                        </Tooltip>
+                        <Tooltip content="颜色" placement="left" :offset="-4" theme="light">
+                            <ColorPicker class="toolbar-color" @on-change="colorChange" v-model="color" alpha :colors="recommendColors"></ColorPicker>
+                        </Tooltip>
+                    </div>
                     <Tooltip content="上一个动画" placement="left" :offset="-4" theme="light">
                         <Button @click="back" style="margin-bottom: 10px" type="success" shape="circle" icon="ios-skip-backward"></Button>
+                    </Tooltip>
+                    <Tooltip v-if="isVideo" :content="isPlaying ? '暂停' : '播放'" placement="left" :offset="-4" theme="light">
+                        <Button @click="playAndPause" style="margin-bottom: 10px" type="success" shape="circle" :icon="isPlaying ? 'md-pause' : 'md-play'" ></Button>
                     </Tooltip>
                     <Tooltip content="下一个动画" placement="left" :offset="-4" theme="light">
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
-                <Tooltip style="bottom: 90px" class="horizontal" :content="palettePermission ? '取消授权' : '画板授权'" placement="left" :offset="-4" theme="light">
+                <Tooltip v-if="!isVideo" style="bottom: 130px" class="horizontal" :content="palettePermission ? '取消授权' : '画板授权'" placement="left" :offset="-4" theme="light">
                     <Button @click="controlStudentPalette" type="warning" shape="circle" icon="ios-bulb" />
+                </Tooltip>
+                <Tooltip style="bottom: 90px" class="horizontal" content="课件列表" placement="left" :offset="-4" theme="light">
+                    <Button @click="showCoursewareList" type="primary" shape="circle" icon="md-list" />
                 </Tooltip>
                 <Tooltip style="bottom: 50px" class="horizontal" content="重新上传PPT" placement="left" :offset="-4" theme="light">
                     <Button @click="pptReupload" type="primary" shape="circle" icon="md-refresh" />
                 </Tooltip>
                 <Tooltip style="bottom: 10px" class="horizontal" :content="startClassFlag ? '暂停上课' : '开始上课'" placement="left" :offset="-4" theme="light">
-                    <Button @click="startClass" type="error" shape="circle" :icon="startClassFlag ? 'md-pause' : 'md-play'" />
+                    <Button @click="startClass" type="error" shape="circle" :icon="startClassFlag ? 'md-power' : 'ios-paper-plane'" />
                 </Tooltip>
             </div>
         </div>
-        <div ref="palette-content" class="palette-content" :class="handleCanvasCursor">
+        <div v-if="!isVideo" ref="palette-content" class="palette-content" :class="handleCanvasCursor">
             <canvas ref="canvas" />
         </div>
 
@@ -55,10 +66,11 @@
     import ErrorTipModal from "../shared/errorTipModal";
     let Mousetrap = require('mousetrap');
     import {Palette} from '../../libs/palette';
+    import VueVideo from "./components/vue-video";
 
     export default {
         name: "draw-board",
-        components: {ErrorTipModal},
+        components: {VueVideo, ErrorTipModal},
         data() {
             return {
                 baseUrl: 'http://ow365.cn/?i=20293&n=5&furl=',
@@ -75,7 +87,8 @@
                 channel: null,
                 startClassFlag: false,
                 lastEvent: '',
-                palettePermission: false
+                palettePermission: false,
+                isPlaying: false
             }
         },
         props: {
@@ -84,8 +97,15 @@
             online: Boolean,
             iceServers: Object
         },
-        watch: {},
+        watch: {
+            url(val) {
+                console.log(val);
+            }
+        },
         computed: {
+            isVideo() {
+                return this.url.endsWith('.mp4');
+            },
             baseMessage() {
                 return {sender: this.userId, receiver: this.studentId};
             },
@@ -137,6 +157,15 @@
             lineWidthChange() {
                 this.palette.changeWay({lineWidth: this.lineWidth});
             },
+            playAndPause() {
+                if (this.isPlaying) {
+                    this.$refs["courseware-video"].pause();
+                } else {
+                    this.$refs["courseware-video"].play();
+                }
+                this.isPlaying = !this.isPlaying;
+                this.$stompClient.send('/playAndPause', this.isPlaying, {});
+            },
             back() {
                 this.myIframeWindow.postMessage("preAnim", '*');
                 this.$stompClient.send('/back', JSON.stringify(this.baseMessage), {});
@@ -146,27 +175,31 @@
                 this.$stompClient.send('/next', JSON.stringify(this.baseMessage), {});
             },
             handlePaletteResize() {
-                let width = this.$refs['draw-board-container'].offsetWidth - 56;
-                let height = this.$refs['draw-board-container'].offsetHeight;
-                let canvasWidth = (height - 35) * 148732 / 83700;
-                let canvasHeight = width * 2569 / 4565;
-                this.$refs['canvas'].width = canvasHeight < height ? width : canvasWidth;
-                this.$refs['canvas'].height = canvasHeight < height ? canvasHeight : height;
-                this.$refs['palette-content'].style.width = width + 'px';
-                this.$refs['palette-content'].style.height = (canvasHeight < height ? JSON.parse(JSON.stringify(this.$refs['canvas'].height)) + 35
-                    : this.$refs['canvas'].height) + 'px';
-                if (canvasHeight >= height) {
-                    this.$refs['canvas'].height -= 35;
+                if (!this.isVideo) {
+                    let width = this.$refs['draw-board-container'].offsetWidth - 56;
+                    let height = this.$refs['draw-board-container'].offsetHeight;
+                    let canvasWidth = (height - 35) * 148732 / 83700;
+                    let canvasHeight = width * 2569 / 4565;
+                    this.$refs['canvas'].width = canvasHeight < height ? width : canvasWidth;
+                    this.$refs['canvas'].height = canvasHeight < height ? canvasHeight : height;
+                    this.$refs['palette-content'].style.width = width + 'px';
+                    this.$refs['palette-content'].style.height = (canvasHeight < height ? JSON.parse(JSON.stringify(this.$refs['canvas'].height)) + 35
+                        : this.$refs['canvas'].height) + 'px';
+                    if (canvasHeight >= height) {
+                        this.$refs['canvas'].height -= 35;
+                    }
                 }
             },
             initPalette() {
-                this.palette = new Palette(this.$refs['canvas'], {
-                    drawColor: this.color,
-                    drawType: this.currHandle,
-                    lineWidth: this.lineWidth,
-                    allowCallback: this.allowCallback,
-                    moveCallback: this.moveCallback
-                });
+                if (!this.isVideo) {
+                    this.palette = new Palette(this.$refs['canvas'], {
+                        drawColor: this.color,
+                        drawType: this.currHandle,
+                        lineWidth: this.lineWidth,
+                        allowCallback: this.allowCallback,
+                        moveCallback: this.moveCallback
+                    });
+                }
             },
             allowCallback(cancel, go) {
                 this.allowCancel = !cancel;
@@ -263,7 +296,7 @@
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
                     // 给对方发送 offer
-                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer, content: this.baseUrl + this.url};
+                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer, content: (this.isVideo ? '' : this.baseUrl) + this.url};
                     this.$stompClient.send('/sendPaletteOffer', JSON.stringify(message), {});
                 } catch (e) {
                     console.log('createOffer: ', e);
@@ -331,7 +364,11 @@
                     this.$refs.errorTipModal.show('请先结束当前课程');
                 }
             },
+            showCoursewareList() {
+                this.$emit('on-show-courseware')
+            },
             startClass() {
+                // TODO
                 // if (this.online) {
                     this.$stompClient.send('/sendStartClassRequest', JSON.stringify(this.baseMessage), {});
                 // } else {
@@ -340,7 +377,7 @@
             }
         },
         mounted() {
-            this.myIframeWindow = document.getElementById('my-iframe').contentWindow;
+            this.myIframeWindow = document.getElementById('my-iframe')?.contentWindow;
             this.handleOnWebSocketEvent();
             window.addEventListener('resize', this.handlePaletteResize());
             this.$nextTick(async () => {
@@ -352,6 +389,7 @@
             });
         },
         created() {
+            console.log(123);
             Mousetrap.bind(['command+z', 'ctrl+z'], () => {
                 this.handleClick('cancel');
                 return false;
@@ -370,12 +408,20 @@
 
 <style lang="less">
     .draw-board-container {
-        width: ~"calc(100% - 240px)";
+        width: 100%;
         height: 100%;
         display: inline-block;
         vertical-align: top;
-        padding-left: 16px;
         position: relative;
+
+        &-main {
+            background-color: #515a6e;
+            height: 100%;
+            width: ~"calc(100% - 40px)";
+            display: inline-block;
+            vertical-align: top;
+            position: relative;
+        }
 
         .palette-content {
             position: absolute;
@@ -387,9 +433,17 @@
 
         iframe {
             height: 100%;
+            width: 100%;
             display: inline-block;
-            width: ~"calc(100% - 40px)";
             pointer-events: none;
+        }
+
+        .courseware-video {
+            /*height: 100%;*/
+            width: 100%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .cursor-pen {

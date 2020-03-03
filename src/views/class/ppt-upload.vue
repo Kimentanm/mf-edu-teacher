@@ -1,9 +1,10 @@
 <template>
     <Upload
+            ref="upload"
             class="ppt-upload"
             type="drag"
             :max-size="5 * 1024"
-            accept="application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/pdf"
+            :accept="contentTypes.join(',')"
             :action="baseUrl + '/common/file/upload'"
             :on-error="handleUploadError"
             :on-format-error="handleFileFormatError"
@@ -12,10 +13,13 @@
             :on-success="handleUploadSuccess">
         <div class="ppt-upload-tag">
             <img src="../../assets/images/ppt-icon.png">
-            <p>点击或拖拽上传PPT</p>
+            <img class="marL20" src="../../assets/images/pdf-icon.png">
+            <img class="marL20" src="../../assets/images/video-icon.png">
+            <p>您可以上传PPT课件、PDF文件、Video视频</p>
+            <p>点击或拖拽上传文件</p>
         </div>
 
-        <loading-modal :show="uploadLoading" title="正在上传PPT"></loading-modal>
+        <loading-modal :show="uploadLoading" title="正在上传课件"></loading-modal>
 
         <error-tip-modal ref="errorTip"></error-tip-modal>
     </Upload>
@@ -33,28 +37,32 @@
             return {
                 baseUrl,
                 uploadLoading: false,
-                contentTypes: ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']
+                contentTypes: ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'video/mp4']
             }
         },
         props: {},
         watch: {},
         computed: {},
         methods: {
+            startUpload() {
+                this.$refs.upload.handleClick();
+            },
             handleUploadSuccess(response, file, fileList) {
                 this.uploadLoading = false;
                 this.$emit('on-upload-success', response.data[0].location)
             },
             handleUploadError(error, file, fileList) {
-                this.$refs.errorTip.show("PPT上传失败，请重试");
+                this.$refs.errorTip.show("课件上传失败，请重试");
                 this.uploadLoading = false;
             },
             handleFileFormatError(file, fileList) {
-                this.$refs.errorTip.show("请上传PPT文件");
+                this.$refs.errorTip.show("请上传PPT或PDF或视频文件");
                 this.uploadLoading = false;
             },
             handleBeforeUpload(file) {
                 if (this.contentTypes.indexOf(file.type) === -1) {
-                    this.$refs.errorTip.show("请上传PPT或PDF文件");
+                    this.$refs.errorTip.show("请上传PPT或PDF或视频文件");
                     return false;
                 }
                 this.uploadLoading = true;
@@ -71,11 +79,8 @@
 
 <style lang="less">
     .ppt-upload {
-        width: ~"calc(100% - 240px)";
+        width: 100%;
         height: 100%;
-        display: inline-block;
-        vertical-align: top;
-        padding-left: 16px;
         position: relative;
 
         &-tag {
@@ -92,6 +97,7 @@
             p {
                 color: #fff;
                 font-size: 25px;
+                margin-top: 20px;
             }
         }
 
