@@ -48,11 +48,16 @@ class HttpRequest {
                 }, 500)
             }
             if (data.code !== 200) {
-                // 后端服务在个别情况下回报201，待确认
-                if (data.code === 401) {
+                if (data.code === 998) {
                     clearToken();
                     window.location.href = '/#/login'
-                    Message.error('未登录，或登录失效，请登录')
+                    Message.error({
+                        background: true,
+                        content: data.message,
+                        duration: 60,
+                        closable: true
+                    });
+                    return;
                 } else {
                     if (data.msg) Message.error(data.msg)
                 }
