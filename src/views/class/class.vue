@@ -11,9 +11,22 @@
                     </h2>
                 </div>
                 <div class="layout-nav">
-                    <Tooltip content="离开教室">
+                    <Tooltip content="离开教室" >
                         <MenuItem name="login-out">
-                            <Button type="error" icon="md-close" shape="circle" @click="goToHome"/>
+                            <!-- <Button type="primary" >OUT</Button> -->
+                            <Button type="primary" shape="circle" @click="goToHome">OUT</Button>
+                        </MenuItem>
+                    </Tooltip>
+                </div>
+                <div class="layout-nav">
+                    <Tooltip content="录制屏幕"v-if="isVideo">
+                        <MenuItem name="video-begin">
+                            <Icon type="ios-videocam" size='35' @click="goVideoTape"/>
+                        </MenuItem>
+                    </Tooltip>
+                    <Tooltip content="结束录制" v-else>
+                        <MenuItem name="video-end">
+                            <Button  type="error" icon="ios-power-outline" shape="circle"  size='small' @click="endVideoTape"/>
                         </MenuItem>
                     </Tooltip>
                 </div>
@@ -89,7 +102,8 @@
                 online: false,
                 outlineType: 0,
                 pptUrl: '',
-                coursewareListShow: true
+                coursewareListShow: true,
+                isVideo:true
             }
         },
         props: {},
@@ -143,6 +157,12 @@
                 this.$router.replace({
                     name: 'home'
                 })
+            },
+            goVideoTape(){
+                this.isVideo=false;
+            },
+            endVideoTape(){
+                this.isVideo=true;
             },
             async createMedia() {
                 // 保存本地流到全局
