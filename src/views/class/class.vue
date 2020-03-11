@@ -2,7 +2,9 @@
     <div class="class">
         <div class="header-bar">
             <Menu mode="horizontal" theme="dark" active-name="1" style="height: 100%;padding: 0 16px;">
-                <div class="layout-logo"></div>
+                <!-- <div class="layout-logo"></div> -->
+                <button id="pause">pause</button>
+                <a :href="videoHref" id="download" download="video">123</a>
                 <div class="custom-bar">
                     <h2>{{classInfo.className}}
                         <div v-if="online" class="student-signal online"></div>
@@ -71,6 +73,7 @@
     import PptUpload from "./ppt-upload";
     import CoursewareList from "./components/courseware-list";
     import {mapState} from 'vuex';
+    import {desktopCapturer} from 'electron';
 
     export default {
         name: "class",
@@ -103,7 +106,8 @@
                 outlineType: 0,
                 pptUrl: '',
                 coursewareListShow: true,
-                isVideo:true
+                isVideo:true,
+                videoHref:''
             }
         },
         props: {},
@@ -160,9 +164,37 @@
             },
             goVideoTape(){
                 this.isVideo=false;
+                desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
+                    if (error) throw error
+                    console.log(sources);
+                    for (let i = 0; i < sources.length; ++i) {
+                        if (sources[i].name === '梦飞在线一对一（教师端）') {
+                            console.log(123);
+                            this.createMedia22();
+                            // xxxx=navigator.mediaDevices.getDisplayMedia({video: true})
+                            // .then(stream => {
+                            //     console.log(123);
+                            // })
+                        }
+                    }
+                })       
+            },
+            async createMedia22(){
+                let xxxx='';
+                xxxx= await navigator.mediaDevices.getDisplayMedia({video: true});
+                console.log(xxxx);
+            },
+            handleStream (stream) {
+            document.querySelector('video').src = URL.createObjectURL(stream)
+            },
+
+            handleError (e) {
+            console.log(e)
             },
             endVideoTape(){
+                // recorder.stop()
                 this.isVideo=true;
+                console.log(this.videoHref);
             },
             async createMedia() {
                 // 保存本地流到全局
