@@ -2,75 +2,96 @@
     <div ref="draw-board-container" class="draw-board-container" style="position: relative">
         <div class="draw-board-container-main">
             <vue-video ref="courseware-video" class="courseware-video" v-if="isVideo" :src="url"/>
-            <iframe v-else id="my-iframe" :src="baseUrl + url" frameborder="0"></iframe>
+            <vue-pdf v-if="isPDF" :src="url" @on-pdfScroll="handlePdfScroll" @page-loaded="handlePageLoaded"/>
+            <iframe v-if="isPPT" :id="'my-iframe-' + url" :src="baseUrl + url" frameborder="0"></iframe>
+            <Spin fix v-if="coursewareLoading">
+                <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
+                <div>正在加载</div>
+            </Spin>
         </div>
         <div class="draw-board-toolbar">
             <div class="draw-board-toolbar-content">
                 <div style="text-align: center">
                     <div v-if="!isVideo">
                         <Tooltip content="画笔" placement="left" :offset="-4" theme="light">
-                            <Button @click="handleClick('line')" style="margin-bottom: 10px" shape="circle" icon="ios-brush"></Button>
+                            <Button @click="handleClick('line')" style="margin-bottom: 10px" shape="circle"
+                                    icon="ios-brush"></Button>
                         </Tooltip>
                         <Poptip placement="left" width="20" popper-class="toolbar-line-width">
                             <Tooltip content="线宽" placement="left" :offset="-4" theme="light">
                                 <Button style="margin-bottom: 10px" shape="circle" icon="md-resize"></Button>
                             </Tooltip>
-                            <el-slider @change="lineWidthChange" slot="content" v-model="lineWidth" :max="20" vertical height="120px"></el-slider>
+                            <el-slider @change="lineWidthChange" slot="content" v-model="lineWidth" :max="20" vertical
+                                       height="120px"></el-slider>
                         </Poptip>
                         <Tooltip content="上一步" placement="left" :offset="-4" theme="light">
-                            <Button @click="handleClick('cancel')" style="margin-bottom: 10px" shape="circle" icon="ios-redo"></Button>
+                            <Button @click="handleClick('cancel')" style="margin-bottom: 10px" shape="circle"
+                                    icon="ios-redo"></Button>
                         </Tooltip>
                         <Tooltip content="橡皮擦" placement="left" :offset="-4" theme="light">
-                            <Button @click="handleClick('eraser')" style="margin-bottom: 10px" shape="circle" icon="ios-pint"></Button>
+                            <Button @click="handleClick('eraser')" style="margin-bottom: 10px" shape="circle"
+                                    icon="ios-pint"></Button>
                         </Tooltip>
                         <Tooltip content="清屏" placement="left" :offset="-4" theme="light">
-                            <Button @click="handleClick('clear')" style="margin-bottom: 10px" shape="circle" icon="md-trash"></Button>
+                            <Button @click="handleClick('clear')" style="margin-bottom: 10px" shape="circle"
+                                    icon="md-trash"></Button>
                         </Tooltip>
                         <Tooltip content="颜色" placement="left" :offset="-4" theme="light">
-                            <ColorPicker class="toolbar-color" @on-change="colorChange" v-model="color" alpha :colors="recommendColors"></ColorPicker>
+                            <ColorPicker class="toolbar-color" @on-change="colorChange" v-model="color" alpha
+                                         :colors="recommendColors"></ColorPicker>
                         </Tooltip>
                     </div>
-                    <Tooltip content="上一个动画" placement="left" :offset="-4" theme="light">
-                        <Button @click="back" style="margin-bottom: 10px" type="success" shape="circle" icon="ios-skip-backward"></Button>
+                    <Tooltip :content="isVideo ? '后退5秒' : '上一个动画'" placement="left" :offset="-4" theme="light">
+                        <Button @click="back" style="margin-bottom: 10px" type="success" shape="circle"
+                                icon="ios-skip-backward"></Button>
                     </Tooltip>
-                    <Tooltip v-if="isVideo" :content="isPlaying ? '暂停' : '播放'" placement="left" :offset="-4" theme="light">
-                        <Button @click="playAndPause" style="margin-bottom: 10px" type="success" shape="circle" :icon="isPlaying ? 'md-pause' : 'md-play'" ></Button>
+                    <Tooltip v-if="isVideo" :content="isPlaying ? '暂停' : '播放'" placement="left" :offset="-4"
+                             theme="light">
+                        <Button @click="playAndPause" style="margin-bottom: 10px" type="success" shape="circle"
+                                :icon="isPlaying ? 'md-pause' : 'md-play'"></Button>
                     </Tooltip>
-                    <Tooltip content="下一个动画" placement="left" :offset="-4" theme="light">
+                    <Tooltip :content="isVideo ? '前进5秒' : '下一个动画'" placement="left" :offset="-4" theme="light">
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
-                <Tooltip v-if="!isVideo" style="bottom: 130px" class="horizontal" :content="palettePermission ? '取消授权' : '画板授权'" placement="left" :offset="-4" theme="light">
-                    <Button @click="controlStudentPalette" type="warning" shape="circle" icon="ios-bulb" />
+                <Tooltip v-if="!isVideo" style="bottom: 130px" class="horizontal"
+                         :content="palettePermission ? '取消授权' : '画板授权'" placement="left" :offset="-4" theme="light">
+                    <Button @click="controlStudentPalette" type="warning" shape="circle" icon="ios-bulb"/>
                 </Tooltip>
-                <Tooltip style="bottom: 90px" class="horizontal" content="课件列表" placement="left" :offset="-4" theme="light">
-                    <Button @click="showCoursewareList" type="primary" shape="circle" icon="md-list" />
+                <Tooltip style="bottom: 90px" class="horizontal" content="课件列表" placement="left" :offset="-4"
+                         theme="light">
+                    <Button @click="showCoursewareList" type="primary" shape="circle" icon="md-list"/>
                 </Tooltip>
-                <Tooltip style="bottom: 50px" class="horizontal" content="重新上传PPT" placement="left" :offset="-4" theme="light">
-                    <Button @click="pptReupload" type="primary" shape="circle" icon="md-refresh" />
+                <Tooltip style="bottom: 50px" class="horizontal" content="重新上传PPT" placement="left" :offset="-4"
+                         theme="light">
+                    <Button @click="pptReupload" type="primary" shape="circle" icon="md-refresh"/>
                 </Tooltip>
-                <Tooltip style="bottom: 10px" class="horizontal" :content="startClassFlag ? '暂停上课' : '开始上课'" placement="left" :offset="-4" theme="light">
-                    <Button @click="startClass" type="error" shape="circle" :icon="startClassFlag ? 'md-power' : 'ios-paper-plane'" />
+                <Tooltip style="bottom: 10px" class="horizontal" :content="startClassFlag ? '暂停上课' : '开始上课'"
+                         placement="left" :offset="-4" theme="light">
+                    <Button @click="startClass" type="error" shape="circle"
+                            :icon="startClassFlag ? 'md-power' : 'ios-paper-plane'"/>
                 </Tooltip>
             </div>
         </div>
         <div v-if="!isVideo" ref="palette-content" class="palette-content" :class="handleCanvasCursor">
-            <canvas ref="canvas" />
+            <canvas ref="canvas"/>
         </div>
 
-        <error-tip-modal ref="errorTipModal" />
+        <error-tip-modal ref="errorTipModal"/>
     </div>
 </template>
 
 <script>
     import ErrorTipModal from "../shared/errorTipModal";
+
     let Mousetrap = require('mousetrap');
     import {Palette} from '../../libs/palette';
     import VueVideo from "./components/vue-video";
+    import VuePdf from "./components/vue-pdf";
 
     export default {
         name: "draw-board",
-        components: {VueVideo, ErrorTipModal},
+        components: {VuePdf, VueVideo, ErrorTipModal},
         data() {
             return {
                 baseUrl: 'http://ow365.cn/?i=20293&n=5&furl=',
@@ -88,23 +109,28 @@
                 startClassFlag: false,
                 lastEvent: '',
                 palettePermission: false,
-                isPlaying: false
+                isPlaying: false,
+                coursewareLoading: false
             }
         },
         props: {
             studentId: Number,
             url: String,
             online: Boolean,
-            iceServers: Object
+            iceServers: Object,
+            isCurrent: Boolean
         },
         watch: {
-            url(val) {
-                console.log(val);
-            }
         },
         computed: {
             isVideo() {
                 return this.url.endsWith('.mp4');
+            },
+            isPDF() {
+                return this.url.endsWith('.pdf');
+            },
+            isPPT() {
+                return this.url.endsWith('.ppt') || this.url.endsWith('.pptx');
             },
             baseMessage() {
                 return {sender: this.userId, receiver: this.studentId};
@@ -112,17 +138,35 @@
             handleCanvasCursor() {
                 let result = '';
                 switch (this.currHandle) {
-                    case "line": result = 'cursor-pen'; break;
-                    case "eraser" : result = 'cursor-eraser'; break;
+                    case "line":
+                        result = 'cursor-pen';
+                        break;
+                    case "eraser" :
+                        result = 'cursor-eraser';
+                        break;
                     default:
                 }
                 return result;
             },
-            userId () {
+            userId() {
                 return this.$store.state.user.userIdentity.id;
             },
         },
         methods: {
+            handlePdfScroll(scrollTop) {
+                let sendData = {
+                    type: 'pdf',
+                    data: scrollTop
+                };
+                this.channel.send(JSON.stringify(sendData));
+            },
+            handlePageLoaded() {
+                this.$nextTick(() => {
+                    // 等待pdf加载完毕，再初始化画板
+                    this.init();
+                    this.coursewareLoading = false;
+                });
+            },
             controlStudentPalette() {
                 this.palettePermission = !this.palettePermission;
                 let data = JSON.parse(JSON.stringify(this.baseMessage));
@@ -164,20 +208,52 @@
                     this.$refs["courseware-video"].play();
                 }
                 this.isPlaying = !this.isPlaying;
-                this.$stompClient.send('/playAndPause', this.isPlaying, {});
+                let data = JSON.parse(JSON.stringify(this.baseMessage));
+                data.content = {
+                    isPlaying: this.isPlaying,
+                    time: this.$refs["courseware-video"].getTime()
+                };
+                this.$stompClient.send('/playAndPause', JSON.stringify(data), {});
             },
             back() {
-                this.myIframeWindow.postMessage("preAnim", '*');
-                this.$stompClient.send('/back', JSON.stringify(this.baseMessage), {});
+                if (this.isVideo) {
+                    let data = JSON.parse(JSON.stringify(this.baseMessage));
+                    let time = this.$refs["courseware-video"].getTime();
+                    time -= 5;
+                    this.$refs["courseware-video"].setTime(time);
+                    data.content = {
+                        isPlaying: this.isPlaying,
+                        time: this.$refs["courseware-video"].getTime()
+                    };
+                    this.$stompClient.send('/playAndPause', JSON.stringify(data), {});
+                } else {
+                    this.myIframeWindow.postMessage("preAnim", '*');
+                    this.$stompClient.send('/back', JSON.stringify(this.baseMessage), {});
+                }
             },
             next() {
-                this.myIframeWindow.postMessage("nextAnim", '*');
-                this.$stompClient.send('/next', JSON.stringify(this.baseMessage), {});
+                if (this.isVideo) {
+                    let data = JSON.parse(JSON.stringify(this.baseMessage));
+                    let time = this.$refs["courseware-video"].getTime();
+                    time += 5;
+                    this.$refs["courseware-video"].setTime(time);
+                    data.content = {
+                        isPlaying: this.isPlaying,
+                        time: this.$refs["courseware-video"].getTime()
+                    };
+                    this.$stompClient.send('/playAndPause', JSON.stringify(data), {});
+                } else {
+                    this.myIframeWindow.postMessage("nextAnim", '*');
+                    this.$stompClient.send('/next', JSON.stringify(this.baseMessage), {});
+                }
             },
             handlePaletteResize() {
-                if (!this.isVideo) {
-                    let width = this.$refs['draw-board-container'].offsetWidth - 56;
-                    let height = this.$refs['draw-board-container'].offsetHeight;
+                let classContainer = document.getElementById('class-container');
+                let offsetWidth = classContainer.offsetWidth - 56 - 20;
+                const offsetHeight = classContainer.offsetHeight;
+                if (this.isPPT) {
+                    let width = offsetWidth + 20;
+                    let height = offsetHeight;
                     let canvasWidth = (height - 35) * 148732 / 83700;
                     let canvasHeight = width * 2569 / 4565;
                     this.$refs['canvas'].width = canvasHeight < height ? width : canvasWidth;
@@ -188,6 +264,13 @@
                     if (canvasHeight >= height) {
                         this.$refs['canvas'].height -= 35;
                     }
+                } else if (this.isPDF) {
+                    let width = offsetWidth - 56;
+                    let height = offsetHeight;
+                    this.$refs['canvas'].width = width;
+                    this.$refs['canvas'].height = height;
+                    this.$refs['palette-content'].style.width = width;
+                    this.$refs['palette-content'].style.height = height;
                 }
             },
             initPalette() {
@@ -219,9 +302,13 @@
                 }
                 this.lastEvent = data.arr[0];
                 try {
-                    this.channel.send(JSON.stringify(data));
+                    let sendData = {
+                        type: 'palette',
+                        data: data
+                    };
+                    this.channel.send(JSON.stringify(sendData));
                 } catch (e) {
-
+                    // console.error(e);
                 }
             },
             async onGetPaletteOffer(data) {
@@ -271,7 +358,7 @@
                 this.$bus.off('on-getCloseRequest', this.closeConnection);
             },
             closeConnection() {
-                this.startClassFlag  = false;
+                this.startClassFlag = false;
                 this.endClass();
             },
             async onGetStartClassResponse() {
@@ -279,13 +366,17 @@
                     this.startClassFlag = false;
                     this.endClass();
                 } else {
-                    if (this.peer === null) {
-                        await this.initPeer();
-                        await this.createDataChannel();
-                        this.onDataChannel();
+                    if (!this.isVideo) {
+                        if (this.peer === null) {
+                            await this.initPeer();
+                            await this.createDataChannel();
+                            this.onDataChannel();
+                        }
+                        await this.createPaletteOffer();
+                        if (this.isPPT) {
+                            this.myIframeWindow.postMessage("goPage,0", '*');
+                        }
                     }
-                    await this.createPaletteOffer();
-                    this.myIframeWindow.postMessage("goPage,0", '*');
                     this.startClassFlag = true;
                 }
             },
@@ -296,7 +387,11 @@
                     // 呼叫端设置本地 offer 描述
                     await this.peer.setLocalDescription(offer);
                     // 给对方发送 offer
-                    let message = {sender: this.userId, receiver: this.studentId, sdp: offer, content: (this.isVideo ? '' : this.baseUrl) + this.url};
+                    let message = {
+                        sender: this.userId,
+                        receiver: this.studentId,
+                        sdp: offer,
+                    };
                     this.$stompClient.send('/sendPaletteOffer', JSON.stringify(message), {});
                 } catch (e) {
                     console.log('createOffer: ', e);
@@ -307,11 +402,13 @@
                 this.$stompClient.send('/sendEndClass', JSON.stringify(this.baseMessage), {});
             },
             clearState() {
-                this.peer.close();
-                this.peer = null;
+                if (this.peer) {
+                    this.peer.close();
+                    this.peer = null;
+                }
             },
             createDataChannel() { // 创建 DataChannel
-                try{
+                try {
                     this.channel = this.peer.createDataChannel('messagechannel');
                     this.handleChannel(this.channel);
                 } catch (e) {
@@ -329,7 +426,7 @@
                 channel.onopen = (event) => { // 连接成功
                     console.log('channel onopen', event);
                 };
-                channel.onclose = function(event) { // 连接关闭
+                channel.onclose = function (event) { // 连接关闭
                     console.log('channel onclose', event)
                 };
                 channel.onmessage = (e) => { // 收到消息
@@ -368,28 +465,40 @@
                 this.$emit('on-show-courseware')
             },
             startClass() {
-                // TODO
-                // if (this.online) {
-                    this.$stompClient.send('/sendStartClassRequest', JSON.stringify(this.baseMessage), {});
-                // } else {
-                //     this.$refs.errorTipModal.show('学生不在线，无法开始上课');
-                // }
-            }
-        },
-        mounted() {
-            this.myIframeWindow = document.getElementById('my-iframe')?.contentWindow;
-            this.handleOnWebSocketEvent();
-            window.addEventListener('resize', this.handlePaletteResize());
-            this.$nextTick(async () => {
+                if (this.online) {
+                    let data = JSON.parse(JSON.stringify(this.baseMessage));
+                    data.content = (this.isVideo || this.isPDF ? '' : this.baseUrl) + this.url;
+                    this.$stompClient.send('/sendStartClassRequest', JSON.stringify(data), {});
+                } else {
+                    this.$refs.errorTipModal.show('学生不在线，无法开始上课');
+                }
+            },
+            async init() {
                 this.handlePaletteResize();
                 this.initPalette();
                 await this.initPeer();
                 await this.createDataChannel();
                 this.onDataChannel();
-            });
+            },
+        },
+        mounted() {
+            if (this.isPDF) {
+                this.coursewareLoading = true;
+            }
+            if (this.isPPT) {
+                let iframe = document.getElementById('my-iframe-' + this.url);
+                this.myIframeWindow = iframe?.contentWindow;
+                if (iframe){
+                    iframe.onload = () => {
+                        // 等待iframe加载完毕，在初始化画板
+                        this.init();
+                    };
+                }
+            }
+            this.handleOnWebSocketEvent();
+            window.addEventListener('resize', this.handlePaletteResize);
         },
         created() {
-            console.log(123);
             Mousetrap.bind(['command+z', 'ctrl+z'], () => {
                 this.handleClick('cancel');
                 return false;
@@ -401,7 +510,7 @@
         },
         beforeDestroy() {
             this.handleOffWebSocketEvent();
-            window.removeEventListener('resize', this.handlePaletteResize());
+            window.removeEventListener('resize', this.handlePaletteResize);
         }
     }
 </script>
@@ -421,12 +530,16 @@
             display: inline-block;
             vertical-align: top;
             position: relative;
+
+            .demo-spin-icon-load{
+                animation: ani-demo-spin 1s linear infinite;
+            }
         }
 
         .palette-content {
             position: absolute;
             top: 50%;
-            left: 16px;
+            left: 0px;
             transform: translateY(-50%);
             text-align: center;
         }
@@ -459,7 +572,7 @@
             vertical-align: top;
             width: 40px;
             height: 100%;
-            background-color: rgba(255,255,255, 0.5);
+            background-color: rgba(255, 255, 255, 0.5);
 
             &-content {
                 position: relative;
@@ -498,7 +611,7 @@
                         display: none;
                     }
 
-                    .ivu-input-icon-normal+.ivu-input {
+                    .ivu-input-icon-normal + .ivu-input {
                         padding-right: 7px;
                         border-radius: 50px;
                         cursor: pointer;

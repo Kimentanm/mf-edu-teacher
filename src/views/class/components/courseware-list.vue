@@ -158,6 +158,8 @@
                 transform: translate(-50%, -50%);
                 font-size: 26px;
                 color: #17233d;
+                word-break: break-word;
+                white-space: normal;
             }
 
             &-type {

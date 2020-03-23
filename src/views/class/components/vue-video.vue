@@ -22,6 +22,12 @@
             },
             play() {
                 this.$refs['my-video'].play();
+            },
+            getTime() {
+                return this.$refs['my-video'].currentTime
+            },
+            setTime(currentTime) {
+                this.$refs['my-video'].currentTime = currentTime;
             }
         },
         mounted() {

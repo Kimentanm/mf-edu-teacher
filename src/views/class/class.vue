@@ -29,11 +29,12 @@
                     <video id="student" autoplay/>
                 </div>
             </div>
-            <div class="class-container">
+            <div id="class-container">
                 <ppt-upload ref="ppt-upload" v-show="!pptUrl" @on-upload-success="handleUploadSuccess" />
-                <draw-board v-for="(item, index) in classCourseware[this.classroomId]" :key="index" ref="draw-board" v-show="pptUrl && pptUrl === item && studentId"
+                <draw-board v-for="(item, index) in classCourseware[this.classroomId]" :key="index" ref="draw-board" v-show="pptUrl === item && studentId"
                             :student-id="studentId"
-                            :url="pptUrl"
+                            :url="item"
+                            :isCurrent="item === pptUrl"
                             :online="online"
                             :iceServers="iceServers"
                             @on-ppt-reupload="handlePptReupload"
@@ -438,10 +439,11 @@
                     width: 100%;
                     height: 180px;
                     background-color: #000;
+                    transform: rotateY(180deg);
                 }
             }
 
-            .class-container {
+            #class-container {
                 width: ~"calc(100% - 240px)";
                 height: 100%;
                 display: inline-block;
