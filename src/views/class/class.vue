@@ -73,7 +73,9 @@
     import PptUpload from "./ppt-upload";
     import CoursewareList from "./components/courseware-list";
     import {mapState} from 'vuex';
-    import {desktopCapturer} from 'electron';
+    import Recorder from '../../libs/ScreenRecord.js'
+
+    let recorder = new Recorder('/Users/kimen/Desktop/test.mp4');
 
     export default {
         name: "class",
@@ -164,20 +166,21 @@
             },
             goVideoTape(){
                 this.isVideo=false;
-                desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
-                    if (error) throw error
-                    console.log(sources);
-                    for (let i = 0; i < sources.length; ++i) {
-                        if (sources[i].name === '梦飞在线一对一（教师端）') {
-                            console.log(123);
-                            this.createMedia22();
-                            // xxxx=navigator.mediaDevices.getDisplayMedia({video: true})
-                            // .then(stream => {
-                            //     console.log(123);
-                            // })
-                        }
-                    }
-                })       
+                recorder.startRecord();
+                // desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
+                //     if (error) throw error
+                //     console.log(sources);
+                //     for (let i = 0; i < sources.length; ++i) {
+                //         if (sources[i].name === '梦飞在线一对一（教师端）') {
+                //             console.log(123);
+                //             this.createMedia22();
+                //             // xxxx=navigator.mediaDevices.getDisplayMedia({video: true})
+                //             // .then(stream => {
+                //             //     console.log(123);
+                //             // })
+                //         }
+                //     }
+                // })
             },
             async createMedia22(){
                 let xxxx='';
@@ -194,7 +197,8 @@
             endVideoTape(){
                 // recorder.stop()
                 this.isVideo=true;
-                console.log(this.videoHref);
+                recorder.stopRecord();
+                // console.log(this.videoHref);
             },
             async createMedia() {
                 // 保存本地流到全局
@@ -375,10 +379,10 @@
             this.handleOnWebSocketEvent();
         },
         created() {
-            this.classroomId = this.$route.params.classroomId;
-            if (this.classroomId) {
-                this.getClassInfo();
-            }
+            // this.classroomId = this.$route.params.classroomId;
+            // if (this.classroomId) {
+            //     this.getClassInfo();
+            // }
         },
         beforeDestroy() {
             this.handleOffWebSocket();
