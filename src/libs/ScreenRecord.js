@@ -24,6 +24,7 @@ class Recorder {
      * @memberof Recorder
      */
     startRecord = () => {
+        //TODO Mac暂时无法解决声音的问题，原因见https://stackoverflow.com/questions/34628890/capture-modify-and-then-output-audio-in-electron
         desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
             if (error) throw error;
             for (let i = 0; i < sources.length; ++i) {
@@ -49,24 +50,15 @@ class Recorder {
                             }
                         },
                     }).then(Mediastream => {
-                        this.getMicroAudioStream().then((audioStream) => {
+                        this.mixAudioStream(Mediastream).then((audioStream) => {
                             let tracks = Mediastream.getTracks(); //需要移除音轨，添加混流后的音轨
                             let findAudioTrack = tracks.find(a => a.kind === 'audio');
-                            console.log(findAudioTrack);
                             if (findAudioTrack) {
                                 Mediastream.removeTrack(findAudioTrack);
                             }
-                            Mediastream.addTrack(audioStream.getAudioTracks()[0])//注！此处添加麦克风音轨无效
-                            tracks = Mediastream.getTracks();
-                            console.log(tracks);
-                            // this.mixAudioStream(audioStream);
+                            Mediastream.addTrack(audioStream.getAudioTracks()[0])
                             this.createRecorder(Mediastream);
                         });
-                        // this.mixAudioStream(Mediastream).then(audioStream => {
-                        //     this.createRecorder(Mediastream);
-                        // });
-
-
                     }).catch(err => {
                         this.getUserMediaError(err);
 
