@@ -335,7 +335,12 @@
         },
         destroyed() {
             this.outlineType = 0;
-            this.localStream.getTracks()[0].stop();
+            if (this.localStream) {
+                const tracks = this.localStream.getTracks();
+                tracks.forEach(track => {
+                    track.stop();
+                })
+            }
             this.localStream = null;
             this.closeConnection();
         }
