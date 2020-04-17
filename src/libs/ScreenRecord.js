@@ -50,18 +50,18 @@ class Recorder {
                             }
                         },
                     }).then(Mediastream => {
-                        this.mixAudioStream(Mediastream).then((audioStream) => {
-                            let tracks = Mediastream.getTracks(); //需要移除音轨，添加混流后的音轨
+                        this.mediaStream = Mediastream;
+                        this.mixAudioStream().then((audioStream) => {
+                            let tracks = this.mediaStream.getTracks(); //需要移除音轨，添加混流后的音轨
                             let findAudioTrack = tracks.find(a => a.kind === 'audio');
                             if (findAudioTrack) {
-                                Mediastream.removeTrack(findAudioTrack);
+                                this.mediaStream.removeTrack(findAudioTrack);
                             }
-                            Mediastream.addTrack(audioStream.getAudioTracks()[0])
-                            this.createRecorder(Mediastream);
+                            this.mediaStream.addTrack(audioStream.getAudioTracks()[0])
+                            this.createRecorder(this.mediaStream);
                         });
                     }).catch(err => {
                         this.getUserMediaError(err);
-
                     })
                 }
             }
@@ -73,8 +73,8 @@ class Recorder {
      *
      * @memberof Recorder
      */
-    mixAudioStream = (Mediastream) => {
-        let systemAudioTrack = Mediastream.getAudioTracks()[0]; //获取强制获取的桌面音【轨】
+    mixAudioStream = () => {
+        let systemAudioTrack = this.mediaStream.getAudioTracks()[0]; //获取强制获取的桌面音【轨】
         return new Promise((resolve, reject) => {
             this.getMicroAudioStream().then(audioStream => {//获取麦克风音频【流】
                 let audioContext = new AudioContext();//创建音频上下文
@@ -111,14 +111,11 @@ class Recorder {
      */
     getUserMediaError = (err) => {
         console.error('mediaError', err.name);
-
-
     }
 
 
     getUserAudioError = (err) => {
         console.log('audioError', err);
-
     }
 
     /**
@@ -126,17 +123,16 @@ class Recorder {
      *
      * @memberof Recorder
      */
-    createRecorder = (stream) => {
-        this.recorder = new MediaRecorder(stream);
+    createRecorder = () => {
+        this.recorder = new MediaRecorder(this.mediaStream);
         this.recorder.start();
         this.recorder.ondataavailable = event => {
+            console.log(event.data)
             let blob = new Blob([event.data], {
                 type: 'video/mp4'
             });
             this.saveMedia(blob);
-
         };
-
     }
 
 
@@ -169,6 +165,12 @@ class Recorder {
      */
     stopRecord = () => {
         this.recorder.stop();
+        this.recorder = null;
+        const tracks = this.mediaStream.getTracks();
+        tracks.forEach(track => {
+            track.stop();
+        });
+        this.mediaStream = null;
     }
 
 
