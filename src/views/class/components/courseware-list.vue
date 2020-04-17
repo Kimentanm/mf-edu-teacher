@@ -153,10 +153,10 @@
 
             &-name {
                 position: absolute;
-                top: 50%;
+                top: 55%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                font-size: 26px;
+                font-size: 14px;
                 color: #17233d;
                 word-break: break-word;
                 white-space: normal;

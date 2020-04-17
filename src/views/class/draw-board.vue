@@ -2,7 +2,7 @@
     <div ref="draw-board-container" class="draw-board-container" style="position: relative">
         <div class="draw-board-container-main">
             <vue-video ref="courseware-video" class="courseware-video" v-if="isVideo" :src="url"/>
-            <vue-pdf v-if="isPDF" :src="url" @on-pdfScroll="handlePdfScroll" @page-loaded="handlePageLoaded"/>
+            <vue-pdf ref="vuePdf" v-if="isPDF" :src="url" @on-pdfScroll="handlePdfScroll" @page-loaded="handlePageLoaded"/>
             <iframe v-if="isPPT" :id="'my-iframe-' + url" :src="baseUrl + url" frameborder="0"></iframe>
             <Spin fix v-if="coursewareLoading">
                 <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
@@ -41,7 +41,7 @@
                                          :colors="recommendColors"></ColorPicker>
                         </Tooltip>
                     </div>
-                    <Tooltip :content="isVideo ? '后退5秒' : '上一个动画'" placement="left" :offset="-4" theme="light">
+                    <Tooltip :content="prevText" placement="left" :offset="-4" theme="light">
                         <Button @click="back" style="margin-bottom: 10px" type="success" shape="circle"
                                 icon="ios-skip-backward"></Button>
                     </Tooltip>
@@ -50,7 +50,7 @@
                         <Button @click="playAndPause" style="margin-bottom: 10px" type="success" shape="circle"
                                 :icon="isPlaying ? 'md-pause' : 'md-play'"></Button>
                     </Tooltip>
-                    <Tooltip :content="isVideo ? '前进5秒' : '下一个动画'" placement="left" :offset="-4" theme="light">
+                    <Tooltip :content="nextText" placement="left" :offset="-4" theme="light">
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
@@ -123,6 +123,28 @@
         watch: {
         },
         computed: {
+            prevText() {
+                let result = '';
+                if (this.isVideo) {
+                    result = '前进5秒'
+                } else if (this.isPDF) {
+                    result = '上一页'
+                } else if (this.isPPT) {
+                    result = '上一个动画'
+                }
+                return result;
+            },
+            nextText() {
+                let result = '';
+                if (this.isVideo) {
+                    result = '后退5秒'
+                } else if (this.isPDF) {
+                    result = '下一页'
+                } else if (this.isPPT) {
+                    result = '下一个动画'
+                }
+                return result;
+            },
             isVideo() {
                 return this.url.endsWith('.mp4');
             },
@@ -226,6 +248,8 @@
                         time: this.$refs["courseware-video"].getTime()
                     };
                     this.$stompClient.send('/playAndPause', JSON.stringify(data), {});
+                } else if (this.isPDF) {
+                    this.changePdfPage(0);
                 } else {
                     this.myIframeWindow.postMessage("preAnim", '*');
                     this.$stompClient.send('/back', JSON.stringify(this.baseMessage), {});
@@ -242,9 +266,16 @@
                         time: this.$refs["courseware-video"].getTime()
                     };
                     this.$stompClient.send('/playAndPause', JSON.stringify(data), {});
+                } else if (this.isPDF) {
+                    this.changePdfPage(1);
                 } else {
                     this.myIframeWindow.postMessage("nextAnim", '*');
                     this.$stompClient.send('/next', JSON.stringify(this.baseMessage), {});
+                }
+            },
+            changePdfPage(flag) {
+                if (this.$refs.vuePdf) {
+                    this.$refs.vuePdf.changePdfPage(flag);
                 }
             },
             handlePaletteResize() {

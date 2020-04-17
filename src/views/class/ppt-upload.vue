@@ -5,7 +5,7 @@
             type="drag"
             :max-size="5 * 1024"
             :accept="contentTypes.join(',')"
-            :action="baseUrl + '/common/file/upload'"
+            :action="baseUrl + '/courseware/upload'"
             :on-error="handleUploadError"
             :on-format-error="handleFileFormatError"
             :before-upload="handleBeforeUpload"
@@ -38,7 +38,7 @@
                 baseUrl,
                 uploadLoading: false,
                 contentTypes: ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'video/mp4']
+                'video/mp4', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
             }
         },
         props: {},
