@@ -3,8 +3,6 @@
         <div class="header-bar">
             <Menu mode="horizontal" theme="dark" active-name="1" style="height: 100%;padding: 0 16px;">
                 <!-- <div class="layout-logo"></div> -->
-                <button id="pause">pause</button>
-                <a :href="videoHref" id="download" download="video">123</a>
                 <div class="custom-bar">
                     <h2>{{classInfo.className}}
                         <div v-if="online" class="student-signal online"></div>
@@ -12,6 +10,7 @@
                         </Tooltip>
                     </h2>
                 </div>
+                
                 <div class="layout-nav">
                     <Tooltip content="离开教室" >
                         <MenuItem name="login-out">
@@ -32,6 +31,11 @@
                         </MenuItem>
                     </Tooltip>
                 </div>
+                <div class="layout-nav">
+                    <div class="layout-nav-circle"> 
+                        <!-- <span style="color:#ccc;">123456</span> -->
+                    </div>      
+                </div>               
             </Menu>
         </div>
         <div class="main-content">
@@ -58,7 +62,6 @@
                     <courseware-list v-show="coursewareListShow" ref="courseware-list" :classroomId="classroomId" @click-item="handleClickItem"/>
                 </transition>
             </div>
-
         </div>
 
         <error-tip-modal ref="errorTip"/>
@@ -75,7 +78,7 @@
     import {mapState} from 'vuex';
     import Recorder from '../../libs/ScreenRecord.js'
 
-    let recorder = new Recorder('/Users/kimen/Desktop/test.mp4');
+    let recorder = new Recorder('');
 
     export default {
         name: "class",
@@ -166,26 +169,7 @@
             },
             goVideoTape(){
                 this.isVideo=false;
-                recorder.startRecord();
-                // desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
-                //     if (error) throw error
-                //     console.log(sources);
-                //     for (let i = 0; i < sources.length; ++i) {
-                //         if (sources[i].name === '梦飞在线一对一（教师端）') {
-                //             console.log(123);
-                //             this.createMedia22();
-                //             // xxxx=navigator.mediaDevices.getDisplayMedia({video: true})
-                //             // .then(stream => {
-                //             //     console.log(123);
-                //             // })
-                //         }
-                //     }
-                // })
-            },
-            async createMedia22(){
-                let xxxx='';
-                xxxx= await navigator.mediaDevices.getDisplayMedia({video: true});
-                console.log(xxxx);
+                recorder.startRecord();      
             },
             handleStream (stream) {
             document.querySelector('video').src = URL.createObjectURL(stream)
@@ -379,10 +363,10 @@
             this.handleOnWebSocketEvent();
         },
         created() {
-            // this.classroomId = this.$route.params.classroomId;
-            // if (this.classroomId) {
-            //     this.getClassInfo();
-            // }
+            let os=require('os');
+            let homedir=os.homedir();
+            homedir = homedir.replace(/\\/g, '/');
+            recorder=new Recorder(homedir+'/Desktop/test.mp4'); 
         },
         beforeDestroy() {
             this.handleOffWebSocket();
@@ -404,6 +388,17 @@
 </script>
 
 <style lang="less">
+    .layout-nav-circle{
+        width:100px;
+        height:100px;
+        background:red;
+        animation: blink 1s 3;
+        }
+        @keyframes blink{
+        50% {
+            color: transparent;
+        }
+        }
     .class {
         position: relative;
         height: 100%;
@@ -463,6 +458,8 @@
             .layout-nav{
                 height: 100%;
                 float: right;
+
+                
 
                 .ivu-menu-item {
                     height: 100%;

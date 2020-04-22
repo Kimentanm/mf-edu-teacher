@@ -88,6 +88,9 @@ class Recorder {
                 resolve(mixedOutput.stream);//返回混合后的媒体流
             }).catch(err => {
                 console.error(err);
+                if(err.name==='NotFoundError'){
+                    alert("该设备当前无麦克风，无法完成录制！");
+                }
                 reject()
             })
         })
