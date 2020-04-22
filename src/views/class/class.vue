@@ -389,8 +389,8 @@
 
 <style lang="less">
     .layout-nav-circle{
-        width:100px;
-        height:100px;
+        width:20px;
+        height:20px;
         background:red;
         animation: blink 1s 3;
         }
