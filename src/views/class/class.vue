@@ -10,7 +10,7 @@
                         </Tooltip>
                     </h2>
                 </div>
-                
+
                 <div class="layout-nav">
                     <Tooltip content="离开教室" >
                         <MenuItem name="login-out">
@@ -32,10 +32,10 @@
                     </Tooltip>
                 </div>
                 <div class="layout-nav">
-                    <div class="layout-nav-circle"> 
+                    <div class="layout-nav-circle">
                         <!-- <span style="color:#ccc;">123456</span> -->
-                    </div>      
-                </div>               
+                    </div>
+                </div>
             </Menu>
         </div>
         <div class="main-content">
@@ -169,7 +169,9 @@
             },
             goVideoTape(){
                 this.isVideo=false;
-                recorder.startRecord();      
+                recorder.startRecord().then().catch(err => {
+                    console.log(err);
+                });
             },
             handleStream (stream) {
             document.querySelector('video').src = URL.createObjectURL(stream)
@@ -366,7 +368,7 @@
             let os=require('os');
             let homedir=os.homedir();
             homedir = homedir.replace(/\\/g, '/');
-            recorder=new Recorder(homedir+'/Desktop/test.mp4'); 
+            recorder=new Recorder(homedir+'/Desktop/test.mp4');
         },
         beforeDestroy() {
             this.handleOffWebSocket();
@@ -469,7 +471,7 @@
                 height: 100%;
                 float: right;
 
-                
+
 
                 .ivu-menu-item {
                     height: 100%;

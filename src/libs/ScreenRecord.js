@@ -24,47 +24,52 @@ class Recorder {
      * @memberof Recorder
      */
     startRecord = () => {
-        //TODO Mac暂时无法解决声音的问题，原因见https://stackoverflow.com/questions/34628890/capture-modify-and-then-output-audio-in-electron
-        desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
-            if (error) throw error;
-            for (let i = 0; i < sources.length; ++i) {
-                if (sources[i].name === '梦飞在线一对一（教师端）') {
-                    /* 要获取桌面音频必须设置audio约束如下 */
-                    navigator.mediaDevices.getUserMedia({
-                        video: {
-                            mandatory: {
-                                chromeMediaSource: 'desktop',
-                                chromeMediaSourceId: sources[i].id,
-                                maxWidth: window.screen.width,
-                                maxHeight: window.screen.height
-                                /*cursor:"never" */
-                                /*取消录制鼠标，以免鼠标闪烁，这个目前标准定义了各浏览器还没实现，
-                                如果需要请使用webrtc-adapter，使用最新API，
-                                视频录制被单独分离成getDisplayMedia，
-                                但是cursor约束条件是否有效暂时也不确定。没试过。*/
-                            }
-                        },
-                        audio: {
-                            mandatory: {
-                                chromeMediaSource: 'desktop',
-                            }
-                        },
-                    }).then(Mediastream => {
-                        this.mediaStream = Mediastream;
-                        this.mixAudioStream().then((audioStream) => {
-                            let tracks = this.mediaStream.getTracks(); //需要移除音轨，添加混流后的音轨
-                            let findAudioTrack = tracks.find(a => a.kind === 'audio');
-                            if (findAudioTrack) {
-                                this.mediaStream.removeTrack(findAudioTrack);
-                            }
-                            this.mediaStream.addTrack(audioStream.getAudioTracks()[0])
-                            this.createRecorder(this.mediaStream);
-                        });
-                    }).catch(err => {
-                        this.getUserMediaError(err);
-                    })
+        return new Promise((resolve, reject) => {
+            //TODO Mac暂时无法解决声音的问题，原因见https://stackoverflow.com/questions/34628890/capture-modify-and-then-output-audio-in-electron
+            desktopCapturer.getSources({types: ['window', 'screen']}, (error, sources) => {
+                if (error) throw error;
+                for (let i = 0; i < sources.length; ++i) {
+                    if (sources[i].name === '梦飞在线一对一（教师端）') {
+                        /* 要获取桌面音频必须设置audio约束如下 */
+                        navigator.mediaDevices.getUserMedia({
+                            video: {
+                                mandatory: {
+                                    chromeMediaSource: 'desktop',
+                                    chromeMediaSourceId: sources[i].id,
+                                    maxWidth: window.screen.width,
+                                    maxHeight: window.screen.height
+                                    /*cursor:"never" */
+                                    /*取消录制鼠标，以免鼠标闪烁，这个目前标准定义了各浏览器还没实现，
+                                    如果需要请使用webrtc-adapter，使用最新API，
+                                    视频录制被单独分离成getDisplayMedia，
+                                    但是cursor约束条件是否有效暂时也不确定。没试过。*/
+                                }
+                            },
+                            audio: {
+                                mandatory: {
+                                    chromeMediaSource: 'desktop',
+                                }
+                            },
+                        }).then(Mediastream => {
+                            this.mediaStream = Mediastream;
+                            this.mixAudioStream().then((audioStream) => {
+                                let tracks = this.mediaStream.getTracks(); //需要移除音轨，添加混流后的音轨
+                                let findAudioTrack = tracks.find(a => a.kind === 'audio');
+                                if (findAudioTrack) {
+                                    this.mediaStream.removeTrack(findAudioTrack);
+                                }
+                                this.mediaStream.addTrack(audioStream.getAudioTracks()[0])
+                                this.createRecorder(this.mediaStream);
+                                resolve();
+                            }).catch(err => {
+                                reject(err)
+                            });
+                        }).catch(err => {
+                            this.getUserMediaError(err);
+                        })
+                    }
                 }
-            }
+            });
         });
     }
 
@@ -91,7 +96,7 @@ class Recorder {
                 if(err.name==='NotFoundError'){
                     alert("该设备当前无麦克风，无法完成录制！");
                 }
-                reject()
+                reject(err)
             })
         })
 
@@ -130,7 +135,6 @@ class Recorder {
         this.recorder = new MediaRecorder(this.mediaStream);
         this.recorder.start();
         this.recorder.ondataavailable = event => {
-            console.log(event.data)
             let blob = new Blob([event.data], {
                 type: 'video/mp4'
             });
