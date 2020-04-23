@@ -388,17 +388,6 @@
 </script>
 
 <style lang="less">
-    .layout-nav-circle{
-        width:20px;
-        height:20px;
-        background:red;
-        animation: blink 1s 3;
-        }
-        @keyframes blink{
-        50% {
-            color: transparent;
-        }
-        }
     .class {
         position: relative;
         height: 100%;
@@ -407,6 +396,27 @@
         background-size: cover;
         background-position: center;
 
+        .layout-nav-circle{
+            width:13px;
+            height:13px;
+            background:red;
+            border-radius:100%;
+            animation:mymove 3s infinite;
+	        -webkit-animation:mymove 3s infinite; /*Safari and Chrome*/
+            }
+            @keyframes mymove
+            {
+               50% {
+                    background: transparent;
+                }
+            }
+
+            @-webkit-keyframes mymove /*Safari and Chrome*/
+            {
+               50% {
+                    background: transparent;
+                }
+            }
         .header-bar {
             height: 64px;
 
