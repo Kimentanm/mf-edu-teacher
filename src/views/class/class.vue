@@ -32,7 +32,7 @@
                     </Tooltip>
                 </div>
                 <div class="layout-nav">
-                    <div class="layout-nav-circle">
+                    <div class="layout-nav-circle" v-if="circleShow">
                         <!-- <span style="color:#ccc;">123456</span> -->
                     </div>
                 </div>
@@ -87,6 +87,7 @@
             return {
                 localStream: undefined,
                 peer: undefined,
+                circleShow: false,
                 account: '123',
                 offerOption: {
                     offerToReceiveAudio: 1,
@@ -168,9 +169,14 @@
                 })
             },
             goVideoTape(){
-                this.isVideo=false;
-                recorder.startRecord().then().catch(err => {
-                    console.log(err);
+                recorder.startRecord().then(()=>{
+                    this.isVideo =false;
+                    this.circleShow =true;
+                }
+                ).catch(err => {
+                    if(err.name==='NotFoundError'){
+                        this.$refs.errorTip.show('该设备当前无麦克风，无法完成录制！');
+                    }   
                 });
             },
             handleStream (stream) {
@@ -184,6 +190,7 @@
                 // recorder.stop()
                 this.isVideo=true;
                 recorder.stopRecord();
+                this.circleShow =false;
                 // console.log(this.videoHref);
             },
             async createMedia() {
