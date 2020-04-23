@@ -176,7 +176,7 @@
                 ).catch(err => {
                     if(err.name==='NotFoundError'){
                         this.$refs.errorTip.show('该设备当前无麦克风，无法完成录制！');
-                    }   
+                    }
                 });
             },
             handleStream (stream) {
@@ -374,8 +374,11 @@
         created() {
             let os=require('os');
             let homedir=os.homedir();
+            let date = new Date();
             homedir = homedir.replace(/\\/g, '/');
-            recorder=new Recorder(homedir+'/Desktop/test.mp4');
+            date=(date.getMonth()+1).toString()+date .getDate().toString()+(date.getHours()).toString()+(date.getMinutes()+1).toString()+date .getSeconds();
+            // this.getClassInfo();
+            recorder=new Recorder(homedir+'/Desktop/视频录像'+date+'.mp4');
         },
         beforeDestroy() {
             this.handleOffWebSocket();
