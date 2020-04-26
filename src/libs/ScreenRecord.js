@@ -4,6 +4,8 @@ import {
 } from 'electron'
 
 import fs from 'fs';
+import DateUtil from "./DateUtil";
+let os = require('os');
 
 
 /**
@@ -13,8 +15,9 @@ import fs from 'fs';
  */
 class Recorder {
 
-    constructor(path) {
-        this.mediaOutputPath = path;
+    constructor() {
+        let homedir = os.homedir();
+        this.mediaOutputPath = homedir + '/Desktop/上课录像-' + DateUtil.formatDate(new Date(), 'yyyyMMddhhmmss') +'.mp4';
     }
 
 

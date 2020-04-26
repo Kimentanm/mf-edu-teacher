@@ -12,7 +12,7 @@
                 </div>
 
                 <div class="layout-nav">
-                    <Tooltip content="离开教室" >
+                    <Tooltip content="离开教室">
                         <MenuItem name="login-out">
                             <!-- <Button type="primary" >OUT</Button> -->
                             <Button type="primary" shape="circle" @click="goToHome">OUT</Button>
@@ -20,21 +20,17 @@
                     </Tooltip>
                 </div>
                 <div class="layout-nav">
-                    <Tooltip content="录制屏幕"v-if="isVideo">
+                    <Tooltip content="录制屏幕" v-if="isVideo">
                         <MenuItem name="video-begin">
                             <Icon type="ios-videocam" size='35' @click="goVideoTape"/>
                         </MenuItem>
                     </Tooltip>
                     <Tooltip content="结束录制" v-else>
                         <MenuItem name="video-end">
-                            <Button  type="error" icon="ios-power-outline" shape="circle"  size='small' @click="endVideoTape"/>
+                            <div class="layout-nav-circle marR5" />
+                            <Icon type="ios-videocam" size='35' @click="endVideoTape"/>
                         </MenuItem>
                     </Tooltip>
-                </div>
-                <div class="layout-nav">
-                    <div class="layout-nav-circle" v-if="circleShow">
-                        <!-- <span style="color:#ccc;">123456</span> -->
-                    </div>
                 </div>
             </Menu>
         </div>
@@ -49,8 +45,9 @@
                 </div>
             </div>
             <div id="class-container">
-                <ppt-upload ref="ppt-upload" v-show="!pptUrl" @on-upload-success="handleUploadSuccess" />
-                <draw-board v-for="(item, index) in classCourseware[this.classroomId]" :key="index" ref="draw-board" v-show="pptUrl === item && studentId"
+                <ppt-upload ref="ppt-upload" v-show="!pptUrl" @on-upload-success="handleUploadSuccess"/>
+                <draw-board v-for="(item, index) in classCourseware[this.classroomId]" :key="index" ref="draw-board"
+                            v-show="pptUrl === item && studentId"
                             :student-id="studentId"
                             :url="item"
                             :isCurrent="item === pptUrl"
@@ -59,7 +56,8 @@
                             @on-ppt-reupload="handlePptReupload"
                             @on-show-courseware="handleShowCoursewareList"/>
                 <transition name="fade">
-                    <courseware-list v-show="coursewareListShow" ref="courseware-list" :classroomId="classroomId" @click-item="handleClickItem"/>
+                    <courseware-list v-show="coursewareListShow" ref="courseware-list" :classroomId="classroomId"
+                                     @click-item="handleClickItem"/>
                 </transition>
             </div>
         </div>
@@ -71,7 +69,7 @@
 <script>
     import ErrorTipModal from "../shared/errorTipModal";
     import DrawBoard from "./draw-board";
-    import { getClassInfo } from "@/api/class";
+    import {getClassInfo} from "@/api/class";
     import HeaderBar from '../main/components/header-bar'
     import PptUpload from "./ppt-upload";
     import CoursewareList from "./components/courseware-list";
@@ -112,8 +110,8 @@
                 outlineType: 0,
                 pptUrl: '',
                 coursewareListShow: true,
-                isVideo:true,
-                videoHref:''
+                isVideo: true,
+                videoHref: ''
             }
         },
         props: {},
@@ -125,7 +123,7 @@
             baseMessage() {
                 return {sender: this.userId, receiver: this.studentId};
             },
-            userId () {
+            userId() {
                 return this.$store.state.user.userIdentity.id;
             },
             studentId() {
@@ -134,8 +132,12 @@
             outlineTypeTip() {
                 let tip = '学生未进入课堂';
                 switch (this.outlineType) {
-                    case 0 : tip = '学生未进入课堂'; break;
-                    case 1 : tip = '学生窗口未置顶'; break;
+                    case 0 :
+                        tip = '学生未进入课堂';
+                        break;
+                    case 1 :
+                        tip = '学生窗口未置顶';
+                        break;
                     default:
                 }
                 return tip;
@@ -168,37 +170,27 @@
                     name: 'home'
                 })
             },
-            goVideoTape(){
-                recorder.startRecord().then(()=>{
-                    this.isVideo =false;
-                    this.circleShow =true;
-                }
-                ).catch(err => {
-                    if(err.name==='NotFoundError'){
+            goVideoTape() {
+                recorder.startRecord().then(() => {
+                    this.$Message.success('开始录像');
+                    this.isVideo = false;
+                }).catch(err => {
+                    if (err.name === 'NotFoundError') {
                         this.$refs.errorTip.show('该设备当前无麦克风，无法完成录制！');
                     }
                 });
             },
-            handleStream (stream) {
-            document.querySelector('video').src = URL.createObjectURL(stream)
-            },
-
-            handleError (e) {
-            console.log(e)
-            },
-            endVideoTape(){
-                // recorder.stop()
-                this.isVideo=true;
+            endVideoTape() {
+                this.$Message.success('结束路线录像，录像文件存储在您的桌面');
+                this.isVideo = true;
                 recorder.stopRecord();
-                this.circleShow =false;
-                // console.log(this.videoHref);
             },
             async createMedia() {
                 // 保存本地流到全局
                 this.localStream = null;
                 try {
                     this.myVideoTip = "";
-                    this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+                    this.localStream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
                 } catch (e) {
                     switch (e.name) {
                         case 'NotReadableError' : {
@@ -211,7 +203,10 @@
                             console.log('没有摄像头');
                             try {
                                 this.myVideoTip = "";
-                                this.localStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+                                this.localStream = await navigator.mediaDevices.getUserMedia({
+                                    audio: false,
+                                    video: true
+                                });
                             } catch (e) {
                                 switch (e.name) {
                                     case 'NotReadableError' : {
@@ -224,12 +219,14 @@
                                         console.log('没有摄像头');
                                         break;
                                     }
-                                    default: console.log('getUserMedia: ', e.name)
+                                    default:
+                                        console.log('getUserMedia: ', e.name)
                                 }
                             }
                             break;
                         }
-                        default: console.log('getUserMedia: ', e.name)
+                        default:
+                            console.log('getUserMedia: ', e.name)
                     }
                 }
                 if (this.localStream != null) {
@@ -372,13 +369,11 @@
             this.handleOnWebSocketEvent();
         },
         created() {
-            let os=require('os');
-            let homedir=os.homedir();
-            let date = new Date();
-            homedir = homedir.replace(/\\/g, '/');
-            date=(date.getMonth()+1).toString()+date .getDate().toString()+(date.getHours()).toString()+(date.getMinutes()+1).toString()+date .getSeconds();
-            // this.getClassInfo();
-            recorder=new Recorder(homedir+'/Desktop/视频录像'+date+'.mp4');
+            recorder = new Recorder();
+            this.classroomId = this.$route.params.classroomId;
+            if (this.classroomId) {
+                this.getClassInfo();
+            }
         },
         beforeDestroy() {
             this.handleOffWebSocket();
@@ -408,31 +403,31 @@
         background-size: cover;
         background-position: center;
 
-        .layout-nav-circle{
-            width:13px;
-            height:13px;
-            background:red;
-            border-radius:100%;
-            animation:mymove 3s infinite;
-	        -webkit-animation:mymove 3s infinite; /*Safari and Chrome*/
-            }
-            @keyframes mymove
-            {
-               50% {
-                    background: transparent;
-                }
-            }
+        .layout-nav-circle {
+            width: 13px;
+            height: 13px;
+            background: red;
+            border-radius: 100%;
+            animation: mymove 1s infinite;
+            -webkit-animation: mymove 1s infinite; /*Safari and Chrome*/
+        }
 
-            @-webkit-keyframes mymove /*Safari and Chrome*/
-            {
-               50% {
-                    background: transparent;
-                }
+        @keyframes mymove {
+            50% {
+                background: transparent;
             }
+        }
+
+        @-webkit-keyframes mymove /*Safari and Chrome*/ {
+            50% {
+                background: transparent;
+            }
+        }
+
         .header-bar {
             height: 64px;
 
-            .layout-logo{
+            .layout-logo {
                 width: 100px;
                 height: 30px;
                 background: #5b6270;
@@ -477,10 +472,9 @@
                 }
             }
 
-            .layout-nav{
+            .layout-nav {
                 height: 100%;
                 float: right;
-
 
 
                 .ivu-menu-item {
@@ -504,7 +498,7 @@
             height: ~'calc(100% - 64px)';
             padding: 16px;
 
-            .video-container{
+            .video-container {
                 width: 240px;
                 display: inline-block;
 
@@ -515,7 +509,7 @@
                     transform: translate(-50%, -50%);
                 }
 
-                video{
+                video {
                     width: 100%;
                     height: 180px;
                     background-color: #000;
