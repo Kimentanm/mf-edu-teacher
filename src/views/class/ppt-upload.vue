@@ -12,10 +12,11 @@
             :on-exceeded-size="handleExceededSize"
             :on-success="handleUploadSuccess">
         <div class="ppt-upload-tag">
-            <img src="../../assets/images/ppt-icon.png">
+            <img src="../../assets/images/word-icon.png">
+            <img class="marL20" src="../../assets/images/ppt-icon.png">
             <img class="marL20" src="../../assets/images/pdf-icon.png">
             <img class="marL20" src="../../assets/images/video-icon.png">
-            <p>您可以上传PPT课件、PDF文件、Video视频</p>
+            <p>您可以上传Word文档、PPT课件、PDF文件、Video视频</p>
             <p>点击或拖拽上传文件</p>
         </div>
 

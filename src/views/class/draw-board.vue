@@ -12,7 +12,7 @@
         <div class="draw-board-toolbar">
             <div class="draw-board-toolbar-content">
                 <div style="text-align: center">
-                    <div v-if="!isVideo">
+                    <div v-if="!isVideo && !isPDF">
                         <Tooltip content="画笔" placement="left" :offset="-4" theme="light">
                             <Button @click="handleClick('line')" style="margin-bottom: 10px" shape="circle"
                                     icon="ios-brush"></Button>
@@ -54,7 +54,7 @@
                         <Button @click="next" type="success" shape="circle" icon="ios-skip-forward"></Button>
                     </Tooltip>
                 </div>
-                <Tooltip v-if="!isVideo" style="bottom: 130px" class="horizontal"
+                <Tooltip v-if="!isVideo && !isPDF" style="bottom: 130px" class="horizontal"
                          :content="palettePermission ? '取消授权' : '画板授权'" placement="left" :offset="-4" theme="light">
                     <Button @click="controlStudentPalette" type="warning" shape="circle" icon="ios-bulb"/>
                 </Tooltip>
@@ -73,7 +73,7 @@
                 </Tooltip>
             </div>
         </div>
-        <div v-if="!isVideo" ref="palette-content" class="palette-content" :class="handleCanvasCursor">
+        <div v-if="!isVideo && !isPDF" ref="palette-content" class="palette-content" :class="handleCanvasCursor">
             <canvas ref="canvas"/>
         </div>
 
@@ -175,10 +175,13 @@
             },
         },
         methods: {
-            handlePdfScroll(scrollTop) {
+            handlePdfScroll(scrollTop, scrollHeight) {
                 let sendData = {
                     type: 'pdf',
-                    data: scrollTop
+                    data: {
+                        scrollTop,
+                        scrollHeight
+                    }
                 };
                 this.channel.send(JSON.stringify(sendData));
             },
@@ -287,25 +290,29 @@
                     let height = offsetHeight;
                     let canvasWidth = (height - 35) * 148732 / 83700;
                     let canvasHeight = width * 2569 / 4565;
-                    this.$refs['canvas'].width = canvasHeight < height ? width : canvasWidth;
-                    this.$refs['canvas'].height = canvasHeight < height ? canvasHeight : height;
-                    this.$refs['palette-content'].style.width = width + 'px';
-                    this.$refs['palette-content'].style.height = (canvasHeight < height ? JSON.parse(JSON.stringify(this.$refs['canvas'].height)) + 35
-                        : this.$refs['canvas'].height) + 'px';
-                    if (canvasHeight >= height) {
-                        this.$refs['canvas'].height -= 35;
+                    if (this.$refs['canvas'] && this.$refs['palette-content']) {
+                        this.$refs['canvas'].width = canvasHeight < height ? width : canvasWidth;
+                        this.$refs['canvas'].height = canvasHeight < height ? canvasHeight : height;
+                        this.$refs['palette-content'].style.width = width + 'px';
+                        this.$refs['palette-content'].style.height = (canvasHeight < height ? JSON.parse(JSON.stringify(this.$refs['canvas'].height)) + 35
+                            : this.$refs['canvas'].height) + 'px';
+                        if (canvasHeight >= height) {
+                            this.$refs['canvas'].height -= 35;
+                        }
                     }
                 } else if (this.isPDF) {
                     let width = offsetWidth - 56;
                     let height = offsetHeight;
-                    this.$refs['canvas'].width = width;
-                    this.$refs['canvas'].height = height;
-                    this.$refs['palette-content'].style.width = width;
-                    this.$refs['palette-content'].style.height = height;
+                    if (this.$refs['canvas'] && this.$refs['palette-content']) {
+                        this.$refs['canvas'].width = width;
+                        this.$refs['canvas'].height = height;
+                        this.$refs['palette-content'].style.width = width;
+                        this.$refs['palette-content'].style.height = height;
+                    }
                 }
             },
             initPalette() {
-                if (!this.isVideo) {
+                if (!this.isVideo && !this.isPDF) {
                     this.palette = new Palette(this.$refs['canvas'], {
                         drawColor: this.color,
                         drawType: this.currHandle,
