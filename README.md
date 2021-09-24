@@ -18,6 +18,3 @@
 
 ### 课件库可查看共有课件和私有课件，课件可预览和加入收藏
 ![](https://cdn.jsdelivr.net/gh/kimentanm/image-store/img/202109090058004.png)
-
-### 个人中心
-![](https://cdn.jsdelivr.net/gh/kimentanm/image-store/img/202109090059243.png)
