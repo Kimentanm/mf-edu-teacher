@@ -1,4 +1,8 @@
 # 在线一对一授课平台 ── 教师桌面端
+## 关联项目
+- [服务端](https://github.com/Kimentanm/mf-edu-server)
+- [后台管理前端](https://github.com/Kimentanm/mf-edu-admin)
+
 ## 功能列表
 1. 一对一视频
 2. 上传课件到画板，支持PPT、WORD、PDF、Video
